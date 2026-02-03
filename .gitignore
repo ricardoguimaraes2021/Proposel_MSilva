@@ -30,9 +30,17 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*.local
+# Environment and secrets (never commit)
 .env
+.env.local
+.env*.local
+.env.development
+.env.production
+.env.development.local
+.env.production.local
+*.key
+*.pem
+secrets/
 
 # vercel
 .vercel
@@ -40,4 +48,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.env.local
+
+# Local setup and checklist (do not commit)
+SETUP_REMOTE.md
+.github/PRE_COMMIT_CHECKLIST.md
+INCREMENTAL_COMMITS.md
