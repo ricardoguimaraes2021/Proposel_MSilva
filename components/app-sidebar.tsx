@@ -1,6 +1,7 @@
 "use client"
 
-import { Calendar, Home, Inbox, Search, Settings, User2, ChevronUp } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Home, Settings, User2, ChevronUp, FileText, List, PlusCircle, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
@@ -25,34 +26,44 @@ import {
 
 const items = [
   {
-    title: "Home",
+    title: "Dashboard",
     url: "/dashboard",
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "Nova Proposta",
+    url: "/dashboard/proposals/new",
+    icon: PlusCircle,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
+    title: "Propostas",
+    url: "/dashboard/proposals",
+    icon: FileText,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Clientes",
+    url: "/dashboard/clients",
+    icon: Users,
   },
   {
-    title: "Settings",
-    url: "#",
+    title: "Catálogo",
+    url: "/dashboard/services",
+    icon: List,
+  },
+  {
+    title: "Configurações",
+    url: "/dashboard/settings",
     icon: Settings,
   },
 ]
 
 export function AppSidebar() {
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -64,7 +75,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>MSilva Proposals</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -84,29 +95,36 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton>
-                  <User2 />
-                  <span>Username</span>
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="w-[--radix-popper-anchor-width]"
-              >
-                <DropdownMenuItem>
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {isMounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton>
+                    <User2 />
+                    <span>Username</span>
+                    <ChevronUp className="ml-auto" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="top"
+                  className="w-[--radix-popper-anchor-width]"
+                >
+                  <DropdownMenuItem>
+                    <span>Account</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>Billing</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <SidebarMenuButton>
+                <User2 />
+                <span>Username</span>
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
