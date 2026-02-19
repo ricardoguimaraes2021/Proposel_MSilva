@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useRouter } from "next/navigation"
+import { formatDateShort } from "@/lib/utils"
 
 type ProposalRow = {
   id: string
@@ -41,13 +42,7 @@ const statusLabels: Record<string, { label: string; variant: "default" | "second
   sent: { label: "Concluida", variant: "outline" },
   accepted: { label: "Aceite", variant: "default" },
   rejected: { label: "Rejeitado", variant: "secondary" },
-}
-
-const formatDate = (value: string | null) => {
-  if (!value) return "-"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString("pt-PT")
+  cancelled: { label: "Cancelado", variant: "secondary" },
 }
 
 const formatCurrency = (value: number) =>
@@ -160,8 +155,8 @@ export function ProposalsTable({
                 variant: "secondary",
               }
               const totalValue = Number(proposal.total ?? proposal.subtotal ?? 0)
-              const createdAt = formatDate(proposal.created_at ?? null)
-              const eventDate = formatDate(proposal.event_date ?? null)
+              const createdAt = formatDateShort(proposal.created_at ?? null, "-")
+              const eventDate = formatDateShort(proposal.event_date ?? null, "-")
               const proposalId = normalizeProposalId(proposal.id)
               const isUpdating = statusUpdatingId === proposalId
               const rowError = errorId === proposalId

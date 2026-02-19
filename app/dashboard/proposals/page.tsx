@@ -3,13 +3,30 @@ import { Button } from "@/components/ui/button"
 import { ProposalsTable } from "@/components/dashboard/proposals-table"
 import Link from "next/link"
 
-export default async function ProposalsPage() {
+export default async function ProposalsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ highlight?: string | string[] }>
+}) {
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
+  const highlightIdRaw = resolvedSearchParams?.highlight
+  const highlightId = Array.isArray(highlightIdRaw)
+    ? highlightIdRaw[0]?.trim()
+    : highlightIdRaw?.trim()
+
+  const proposalsQuery = supabase
+    .from("proposals")
+    .select("*")
+
+  if (highlightId) {
+    proposalsQuery.eq("id", highlightId).limit(1)
+  } else {
+    proposalsQuery.order("created_at", { ascending: false })
+  }
+
   const [{ data: proposals, error }, { data: companyProfile, error: companyError }] = await Promise.all([
-    supabase
-      .from("proposals")
-      .select("*")
-      .order("created_at", { ascending: false }),
+    proposalsQuery,
     supabase
       .from("company_profile")
       .select("*")
@@ -58,10 +75,26 @@ export default async function ProposalsPage() {
           <h1 className="text-2xl font-bold">Propostas</h1>
           <p className="text-muted-foreground">Historico de propostas geradas.</p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/proposals/new">Nova Proposta</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {highlightId ? (
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/proposals">Ver todas</Link>
+            </Button>
+          ) : null}
+          <Button asChild>
+            <Link href="/dashboard/proposals/new">Nova Proposta</Link>
+          </Button>
+        </div>
       </div>
+
+      {highlightId ? (
+        <div className="rounded-md border bg-muted/40 p-3 text-sm">
+          A mostrar apenas a proposta associada ao serviço.{" "}
+          <Link href="/dashboard/proposals" className="underline">
+            Ver todas
+          </Link>
+        </div>
+      ) : null}
 
       <ProposalsTable
         proposals={proposals ?? []}

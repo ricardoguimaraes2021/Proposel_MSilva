@@ -88,3 +88,32 @@
     scroll-behavior: smooth;
   }
 }
+
+/* Calendar event indicators */
+.calendar-proposal-event > button::after,
+.calendar-manual-event > button::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.calendar-proposal-event > button::after {
+  background-color: rgb(59, 130, 246); /* blue-500 */
+}
+
+.calendar-manual-event > button::after {
+  background-color: rgb(16, 185, 129); /* emerald-500 */
+}
+
+/* When a day has both types, show two dots */
+.calendar-proposal-event.calendar-manual-event > button::after {
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, rgb(59, 130, 246) 50%, rgb(16, 185, 129) 50%);
+}
