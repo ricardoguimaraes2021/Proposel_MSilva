@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { sanitizePhoneInput } from "@/lib/utils"
 
 export type CompanyProfileFormValues = {
   id?: string
@@ -59,6 +60,12 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
     (event: ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value
       setFormData((prev) => ({ ...prev, [field]: value }))
+    }
+
+  const handleDigits = (field: keyof CompanyProfileFormValues, maxLength: number) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const next = sanitizePhoneInput(event.target.value, maxLength)
+      setFormData((prev) => ({ ...prev, [field]: next }))
     }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -143,7 +150,14 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="contact_phone">Telefone</Label>
-            <Input id="contact_phone" value={formData.contact_phone} onChange={handleChange("contact_phone")} />
+            <Input
+              id="contact_phone"
+              value={formData.contact_phone}
+              onChange={handleDigits("contact_phone", 15)}
+              inputMode="tel"
+              pattern="\\+?[0-9]*"
+              maxLength={16}
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="contact_email">Email</Label>

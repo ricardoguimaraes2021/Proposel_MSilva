@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChevronUp, ChevronDown } from "lucide-react"
 import type { PricingType, Service, ServiceIncludedItem, ServicePricedOption } from "@/types"
 import { ProposalPreview, type ProposalPreviewData, type ProposalPreviewService, type ProposalPreviewOption } from "@/components/pdf/proposal-preview"
+import { sanitizePhoneInput, validatePortugueseNif } from "@/lib/utils"
 
 const pricingTypeLabels: Record<PricingType, string> = {
   per_person: "Por pessoa",
@@ -146,6 +147,7 @@ export function ProposalWizard({
   const [isSaving, setIsSaving] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
+  const [nifError, setNifError] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   const [contextText, setContextText] = useState(defaultContext)
@@ -509,8 +511,15 @@ export function ProposalWizard({
   const handleDownloadPdf = async () => {
     setIsGenerating(true)
     setDownloadError(null)
+    setNifError(null)
     try {
       setSaveError(null)
+      if (clientNif.trim() && !validatePortugueseNif(clientNif)) {
+        setDownloadError("NIF inválido.")
+        setNifError("NIF inválido.")
+        setIsGenerating(false)
+        return
+      }
       setIsSaving(true)
       const showVat = valuesIncludeVat
       const vatRate = 23
@@ -939,7 +948,14 @@ export function ProposalWizard({
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="client_phone">Telefone</Label>
-                <Input id="client_phone" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} />
+                <Input
+                  id="client_phone"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(sanitizePhoneInput(e.target.value, 15))}
+                  inputMode="tel"
+                  pattern="\\+?[0-9]*"
+                  maxLength={16}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -949,7 +965,16 @@ export function ProposalWizard({
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="client_nif">NIF</Label>
-                <Input id="client_nif" value={clientNif} onChange={(e) => setClientNif(e.target.value)} placeholder="Para faturação" />
+                <Input
+                  id="client_nif"
+                  value={clientNif}
+                  onChange={(e) => setClientNif(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={9}
+                  placeholder="Para faturação"
+                />
+                {nifError ? <p className="text-xs text-destructive">{nifError}</p> : null}
               </div>
             </div>
           </CardContent>

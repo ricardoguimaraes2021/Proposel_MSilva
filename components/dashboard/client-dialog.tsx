@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { PlusCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { sanitizePhoneInput, validatePortugueseNif } from "@/lib/utils"
 
 type ClientFormValues = {
   name: string
@@ -54,10 +55,20 @@ export function ClientDialog() {
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
   }
 
+  const handleDigits = (field: keyof ClientFormValues, maxLength: number) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const next = sanitizePhoneInput(e.target.value, maxLength)
+      setForm((prev) => ({ ...prev, [field]: next }))
+    }
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name.trim()) {
       setError("Nome é obrigatório.")
+      return
+    }
+    if (form.nif.trim() && !validatePortugueseNif(form.nif)) {
+      setError("NIF inválido.")
       return
     }
     setLoading(true)
@@ -132,7 +143,14 @@ export function ClientDialog() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="phone">Telefone</Label>
-              <Input id="phone" value={form.phone} onChange={handleChange("phone")} />
+              <Input
+                id="phone"
+                value={form.phone}
+                onChange={handleDigits("phone", 15)}
+                inputMode="tel"
+                pattern="\\+?[0-9]*"
+                maxLength={16}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -142,7 +160,20 @@ export function ClientDialog() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="nif">NIF</Label>
-              <Input id="nif" value={form.nif} onChange={handleChange("nif")} placeholder="Para faturação" />
+              <Input
+                id="nif"
+                value={form.nif}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    nif: e.target.value.replace(/\D/g, "").slice(0, 9),
+                  }))
+                }
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={9}
+                placeholder="Para faturação"
+              />
             </div>
           </div>
           <div className="grid gap-2">

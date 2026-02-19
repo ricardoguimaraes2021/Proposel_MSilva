@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type { ClientRow } from "@/components/dashboard/clients-table"
+import { sanitizePhoneInput, validatePortugueseNif } from "@/lib/utils"
 
 type ClientFormValues = {
   name: string
@@ -71,10 +72,20 @@ export function ClientEditDialog({ client }: { client: ClientRow }) {
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
   }
 
+  const handleDigits = (field: keyof ClientFormValues, maxLength: number) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const next = sanitizePhoneInput(e.target.value, maxLength)
+      setForm((prev) => ({ ...prev, [field]: next }))
+    }
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name.trim()) {
       setError("Nome é obrigatório.")
+      return
+    }
+    if (form.nif.trim() && !validatePortugueseNif(form.nif)) {
+      setError("NIF inválido.")
       return
     }
     setLoading(true)
@@ -139,7 +150,14 @@ export function ClientEditDialog({ client }: { client: ClientRow }) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-phone">Telefone</Label>
-              <Input id="edit-phone" value={form.phone} onChange={handleChange("phone")} />
+              <Input
+                id="edit-phone"
+                value={form.phone}
+                onChange={handleDigits("phone", 15)}
+                inputMode="tel"
+                pattern="\\+?[0-9]*"
+                maxLength={16}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -149,7 +167,19 @@ export function ClientEditDialog({ client }: { client: ClientRow }) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-nif">NIF</Label>
-              <Input id="edit-nif" value={form.nif} onChange={handleChange("nif")} />
+              <Input
+                id="edit-nif"
+                value={form.nif}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    nif: e.target.value.replace(/\D/g, "").slice(0, 9),
+                  }))
+                }
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={9}
+              />
             </div>
           </div>
           <div className="grid gap-2">
