@@ -1,4 +1,5 @@
 import type { PricingType } from "@/types"
+import { formatDateShort } from "@/lib/utils"
 
 export type ProposalPreviewOption = {
   name: string
@@ -82,6 +83,7 @@ const getQuantityLabel = (pricingType: PricingType, quantity: number) => {
 }
 
 export function buildProposalPrintHtml(data: ProposalPreviewData) {
+  const formattedEventDate = formatDateShort(data.eventDate ?? null, "-")
   const renderOptions = (options?: ProposalPreviewOption[]) => {
     if (!options?.length) return ""
     const items = options
@@ -379,7 +381,7 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
       ${data.companyTagline ? `<div class="muted">${escapeHtml(data.companyTagline)}</div>` : ""}
       ${data.title ? `<div class="doc-title">${escapeHtml(data.title)}</div>` : ""}
       <div class="hero-meta muted">
-        <div>${escapeHtml(data.eventType || "Evento")} | ${escapeHtml(data.eventDate || "-")}</div>
+        <div>${escapeHtml(data.eventType || "Evento")} | ${escapeHtml(formattedEventDate)}</div>
         <div>Local: ${escapeHtml(data.eventLocation || "-")}</div>
         ${data.guestBasis ? `<div>${escapeHtml(data.guestBasis)}</div>` : ""}
         ${data.vatNote ? `<div>${escapeHtml(data.vatNote)}</div>` : ""}
@@ -398,7 +400,7 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
   <section class="section">
     <h2>Evento</h2>
     <div class="row"><span>Titulo</span><span>${escapeHtml(data.eventTitle || "-")}</span></div>
-    <div class="row"><span>Data</span><span>${escapeHtml(data.eventDate || "-")}</span></div>
+    <div class="row"><span>Data</span><span>${escapeHtml(formattedEventDate)}</span></div>
     <div class="row"><span>Local</span><span>${escapeHtml(data.eventLocation || "-")}</span></div>
     <div class="row"><span>Convidados</span><span>${escapeHtml(data.guestCount || "-")}</span></div>
   </section>
@@ -431,6 +433,7 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
 }
 
 export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
+  const formattedEventDate = formatDateShort(data.eventDate ?? null, "-")
   const sections = (data.sections ?? []).map((section) => ({
     ...section,
     lines: section.body
@@ -499,7 +502,7 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
           ) : null}
           {data.title ? <p className="mt-2 text-sm font-medium">{data.title}</p> : null}
           <div className="mt-2 text-xs text-muted-foreground">
-            <p>{data.eventType || "Evento"} | {data.eventDate || "-"}</p>
+            <p>{data.eventType || "Evento"} | {formattedEventDate}</p>
             <p>Local: {data.eventLocation || "-"}</p>
             {data.guestBasis ? <p>{data.guestBasis}</p> : null}
             {data.vatNote ? <p>{data.vatNote}</p> : null}
@@ -528,7 +531,7 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
           <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Evento</h4>
           <div className="mt-2 grid gap-1 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Titulo</span><span>{data.eventTitle || "-"}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Data</span><span>{data.eventDate || "-"}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Data</span><span>{formattedEventDate}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Local</span><span>{data.eventLocation || "-"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Convidados</span><span>{data.guestCount || "-"}</span></div>
           </div>

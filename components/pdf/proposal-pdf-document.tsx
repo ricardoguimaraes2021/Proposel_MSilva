@@ -8,6 +8,7 @@ import {
 } from "@react-pdf/renderer"
 import type { ProposalPreviewData, ProposalPreviewService, ProposalPreviewOption } from "./proposal-preview"
 import type { PricingType } from "@/types"
+import { formatDateShort } from "@/lib/utils"
 
 // Cores inspiradas no v0 / proposta actual (brand, serif, elegante)
 const colors = {
@@ -336,6 +337,7 @@ export function ProposalPdfDocument({
 }) {
   const labels = lang === "en" ? labelsEn : labelsPt
   const locale = lang === "en" ? "en-GB" : "pt-PT"
+  const formattedEventDate = formatDateShort(data.eventDate ?? null, "—")
 
   const contact = data.companyContact
   const contactLines: string[] = []
@@ -360,7 +362,7 @@ export function ProposalPdfDocument({
             {data.companyTagline ? <Text style={styles.tagline}>{data.companyTagline}</Text> : null}
             {data.title ? <Text style={styles.docTitle}>{data.title}</Text> : null}
             <View style={styles.heroMeta}>
-              <Text>{[data.eventType || labels.eventFallback, data.eventDate || "—"].join(" | ")}</Text>
+              <Text>{[data.eventType || labels.eventFallback, formattedEventDate].join(" | ")}</Text>
               <Text>{labels.location}: {data.eventLocation || "—"}</Text>
               {data.guestBasis ? <Text>{data.guestBasis}</Text> : null}
               {data.vatNote ? <Text>{data.vatNote}</Text> : null}
@@ -391,7 +393,7 @@ export function ProposalPdfDocument({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{labels.event}</Text>
           <View style={styles.row}><Text style={styles.rowLabel}>{labels.title}</Text><Text>{data.eventTitle || "—"}</Text></View>
-          <View style={styles.row}><Text style={styles.rowLabel}>{labels.date}</Text><Text>{data.eventDate || "—"}</Text></View>
+          <View style={styles.row}><Text style={styles.rowLabel}>{labels.date}</Text><Text>{formattedEventDate}</Text></View>
           <View style={styles.row}><Text style={styles.rowLabel}>{labels.location}</Text><Text>{data.eventLocation || "—"}</Text></View>
           <View style={styles.row}><Text style={styles.rowLabel}>{labels.guests}</Text><Text>{data.guestCount || "—"}</Text></View>
         </View>
