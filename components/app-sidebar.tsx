@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Home, Settings, User2, ChevronUp, FileText, List, PlusCircle, Users } from "lucide-react"
+import { Home, Settings, User2, ChevronUp, FileText, List, PlusCircle, Users, CalendarDays, Clock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
@@ -39,6 +39,21 @@ const items = [
     title: "Propostas",
     url: "/dashboard/proposals",
     icon: FileText,
+  },
+  {
+    title: "Calendário",
+    url: "/dashboard/calendar",
+    icon: CalendarDays,
+  },
+  {
+    title: "Clock In/Out",
+    url: "/dashboard/clock",
+    icon: Clock,
+  },
+  {
+    title: "Staff",
+    url: "/dashboard/staff",
+    icon: User2,
   },
   {
     title: "Clientes",
