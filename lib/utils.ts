@@ -7,9 +7,22 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDateShort(value: string | Date | null | undefined, fallback = "—") {
   if (!value) return fallback
+  if (typeof value === "string") {
+    // Evita drift de timezone em strings de data no formato YYYY-MM-DD
+    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+    if (m) {
+      const year = Number(m[1])
+      const month = Number(m[2])
+      const day = Number(m[3])
+      const date = new Date(year, month - 1, day)
+      if (Number.isNaN(date.getTime())) return fallback
+      return date.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" })
+    }
+  }
+
   const date = value instanceof Date ? value : new Date(value)
   if (Number.isNaN(date.getTime())) return typeof value === "string" ? value : fallback
-  return date.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "2-digit" })
+  return date.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" })
 }
 
 export function sanitizePhoneInput(value: string, maxDigits = 15) {

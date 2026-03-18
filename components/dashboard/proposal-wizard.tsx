@@ -159,7 +159,7 @@ export function ProposalWizard({
   const [selectedServices, setSelectedServices] = useState<Record<string, ServiceSelection>>({})
   const [serviceOrder, setServiceOrder] = useState<string[]>([])
 
-  const steps = ["Cliente", "Evento", "Servicos", "Conteudo", "Resumo"]
+  const steps = ["Cliente", "Evento", "Serviços", "Conteúdo", "Resumo"]
 
   const serviceById = useMemo(() => new Map(services.map((service) => [service.id, service])), [services])
 
@@ -374,7 +374,7 @@ export function ProposalWizard({
   const contentSections = useMemo(() => {
     const sections: { title: string; body: string }[] = []
     if (contextText.trim().length > 0) {
-      sections.push({ title: "Enquadramento do Servico", body: contextText })
+      sections.push({ title: "Enquadramento do Serviço", body: contextText })
     }
     return sections
   }, [contextText])
@@ -538,8 +538,8 @@ export function ProposalWizard({
         const notes = entry.includeInTotal
           ? baseNotes
           : baseNotes
-            ? `${baseNotes} | Opcao apresentada`
-            : "Opcao apresentada"
+            ? `${baseNotes} | Opção apresentada`
+            : "Opção apresentada"
 
         return {
           service_id: service.id,
@@ -572,8 +572,8 @@ export function ProposalWizard({
           const notes = entry.includeInTotal
             ? baseNotes
             : baseNotes
-              ? `${baseNotes} | Opcao apresentada`
-              : "Opcao apresentada"
+              ? `${baseNotes} | Opção apresentada`
+              : "Opção apresentada"
 
           return {
             service_index: serviceIndex,
@@ -631,7 +631,7 @@ export function ProposalWizard({
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || "Nao foi possivel guardar a proposta.")
+        throw new Error(errorText || "Não foi possível guardar a proposta.")
       }
 
       const proposal = await response.json()
@@ -649,7 +649,7 @@ export function ProposalWizard({
       router.refresh()
     } catch (error) {
       console.error(error)
-      setDownloadError("Nao foi possivel gerar o PDF.")
+      setDownloadError("Não foi possível gerar o PDF.")
     } finally {
       setIsSaving(false)
       setIsGenerating(false)
@@ -723,7 +723,7 @@ export function ProposalWizard({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor={`override_${service.id}`}>Preco personalizado (EUR)</Label>
+                <Label htmlFor={`override_${service.id}`}>Preço personalizado (EUR)</Label>
                 <Input
                   id={`override_${service.id}`}
                   type="number"
@@ -787,7 +787,7 @@ export function ProposalWizard({
 
             {options.length ? (
               <div className="space-y-3">
-                <Label>Opcoes extras</Label>
+                <Label>Opções extras</Label>
                 <div className="space-y-3">
                   {options.map((option) => {
                     const optionSelection = selection.options[option.id]
@@ -841,7 +841,7 @@ export function ProposalWizard({
                               />
                             </div>
                             <div className="grid gap-2">
-                              <Label htmlFor={`option_override_${option.id}`}>Preco personalizado (EUR)</Label>
+                              <Label htmlFor={`option_override_${option.id}`}>Preço personalizado (EUR)</Label>
                               <Input
                                 id={`option_override_${option.id}`}
                                 type="number"
@@ -953,7 +953,7 @@ export function ProposalWizard({
                   value={clientPhone}
                   onChange={(e) => setClientPhone(sanitizePhoneInput(e.target.value, 15))}
                   inputMode="tel"
-                  pattern="\\+?[0-9]*"
+                  pattern="[+]?[0-9]*"
                   maxLength={16}
                 />
               </div>
@@ -989,7 +989,7 @@ export function ProposalWizard({
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="event_title">Titulo do evento</Label>
+              <Label htmlFor="event_title">Título do evento</Label>
               <Input id="event_title" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} />
             </div>
             <div className="grid gap-2">
@@ -1010,7 +1010,7 @@ export function ProposalWizard({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="guest_count">Numero de convidados</Label>
+              <Label htmlFor="guest_count">Número de convidados</Label>
               <Input id="guest_count" type="number" min={1} value={guestCount} onChange={(e) => setGuestCount(e.target.value)} />
             </div>
             <div className="grid gap-2">
@@ -1047,8 +1047,8 @@ export function ProposalWizard({
       {step === 2 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Servicos</CardTitle>
-            <CardDescription>Selecione os servicos e opcoes extras.</CardDescription>
+            <CardTitle>Serviços</CardTitle>
+            <CardDescription>Selecione os serviços e opções extras.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {sortedCategories.length === 0 ? (
@@ -1090,7 +1090,7 @@ export function ProposalWizard({
       {step === 3 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Conteudo</CardTitle>
+            <CardTitle>Conteúdo</CardTitle>
             <CardDescription>Texto adicional e condicoes gerais.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -1100,7 +1100,7 @@ export function ProposalWizard({
                 id="context"
                 value={contextText}
                 onChange={(e) => setContextText(e.target.value)}
-                placeholder="Descreva o enquadramento do servico."
+                placeholder="Descreva o enquadramento do serviço."
               />
             </div>
             <div className="grid gap-2">
@@ -1119,7 +1119,7 @@ export function ProposalWizard({
               <p className="text-xs text-muted-foreground">Crie mais modelos em Configurações. Cada modelo tem versão PT e EN para o PDF.</p>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="terms_pt">Condicoes gerais (Português)</Label>
+              <Label htmlFor="terms_pt">Condições gerais (Português)</Label>
               <Textarea
                 id="terms_pt"
                 value={termsPt}
@@ -1128,7 +1128,7 @@ export function ProposalWizard({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="terms_en">Condicoes gerais (English)</Label>
+              <Label htmlFor="terms_en">Condições gerais (English)</Label>
               <Textarea
                 id="terms_en"
                 value={termsEn}
@@ -1223,8 +1223,22 @@ export function ProposalWizard({
         <Button variant="outline" onClick={() => setStep((prev) => Math.max(0, prev - 1))} disabled={step === 0}>
           Anterior
         </Button>
-        <Button onClick={() => setStep((prev) => Math.min(steps.length - 1, prev + 1))} disabled={step === steps.length - 1}>
-          Proximo
+        <Button
+          onClick={() => {
+            // Ao avançar do passo "Cliente", validamos o NIF para evitar erros apenas no final.
+            if (step === 0) {
+              if (clientNif.trim() && !validatePortugueseNif(clientNif)) {
+                setNifError("NIF inválido.")
+                return
+              }
+              setNifError(null)
+            }
+
+            setStep((prev) => Math.min(steps.length - 1, prev + 1))
+          }}
+          disabled={step === steps.length - 1}
+        >
+          Próximo
         </Button>
       </div>
     </div>

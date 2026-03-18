@@ -95,21 +95,33 @@ const eventTypeLabelsEn: Record<string, string> = {
 
 function formatDate(value: string | null, locale: "pt-PT" | "en-GB"): string {
   if (!value) return "-"
+  // Evita drift de timezone em strings de data no formato YYYY-MM-DD
+  const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (m) {
+    const year = Number(m[1])
+    const month = Number(m[2])
+    const day = Number(m[3])
+    const date = new Date(year, month - 1, day)
+    if (Number.isNaN(date.getTime())) return value
+    return date.toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" })
+  }
+
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString(locale)
+  return date.toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" })
 }
 
 function parseOptionalNotes(notes: string | null): { isOptional: boolean; detailsText: string } {
   if (!notes) return { isOptional: false, detailsText: "" }
   let cleaned = notes
-  const optionalRegex = /(\s*\|\s*)?Opcao apresentada\s*$/i
+  // Compatibilidade: aceita tanto "Opcao apresentada" (sem acento) como "Opção apresentada".
+  const optionalRegex = /(\s*\|\s*)?Op[cç]ao apresentada\s*$/i
   if (optionalRegex.test(cleaned)) {
     cleaned = cleaned.replace(optionalRegex, "").trim()
     return { isOptional: true, detailsText: cleaned }
   }
-  if (/Opcao apresentada/i.test(cleaned)) {
-    cleaned = cleaned.replace(/Opcao apresentada/gi, "").trim()
+  if (/Op[cç]ao apresentada/i.test(cleaned)) {
+    cleaned = cleaned.replace(/Op[cç]ao apresentada/gi, "").trim()
     return { isOptional: true, detailsText: cleaned }
   }
   return { isOptional: false, detailsText: cleaned.trim() }
