@@ -94,7 +94,7 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
       .join("")
     return `
       <div class="service-section">
-        <div class="section-title">Opcoes</div>
+        <div class="section-title">Opções</div>
         <ul>${items}</ul>
       </div>
     `
@@ -127,12 +127,12 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
 
   const servicesBlock = data.services?.length
     ? data.services.map(renderServiceBlock).join("")
-    : `<p class="muted">Nenhum servico selecionado.</p>`
+    : `<p class="muted">Nenhum serviço selecionado.</p>`
 
   const optionalBlock = data.optionalServices?.length
     ? `
     <section class="section">
-      <h2>Opcoes Apresentadas</h2>
+      <h2>Opções Apresentadas</h2>
       ${data.optionalServices.map(renderServiceBlock).join("")}
     </section>
   `
@@ -399,7 +399,7 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
 
   <section class="section">
     <h2>Evento</h2>
-    <div class="row"><span>Titulo</span><span>${escapeHtml(data.eventTitle || "-")}</span></div>
+    <div class="row"><span>Título</span><span>${escapeHtml(data.eventTitle || "-")}</span></div>
     <div class="row"><span>Data</span><span>${escapeHtml(formattedEventDate)}</span></div>
     <div class="row"><span>Local</span><span>${escapeHtml(data.eventLocation || "-")}</span></div>
     <div class="row"><span>Convidados</span><span>${escapeHtml(data.guestCount || "-")}</span></div>
@@ -408,7 +408,7 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
   ${contactSection}
 
   <section class="section">
-    <h2>Servicos Selecionados</h2>
+    <h2>Serviços Selecionados</h2>
     ${servicesBlock}
   </section>
 
@@ -425,7 +425,7 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
 
   ${
     footerParagraphs
-      ? `\n<section class="section conditions">\n  <h2>Condicoes Gerais</h2>\n  ${footerParagraphs}\n</section>`
+      ? `\n<section class="section conditions">\n  <h2>Condições Gerais</h2>\n  ${footerParagraphs}\n</section>`
       : ""
   }
 </body>
@@ -478,7 +478,7 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
         </div>
         {service.options?.length ? (
           <div className="mt-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Opcoes</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Opções</p>
             <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
               {service.options.map((option) => (
                 <li key={`${service.name}_${option.name}`}>
@@ -530,7 +530,7 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
         <section>
           <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Evento</h4>
           <div className="mt-2 grid gap-1 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Titulo</span><span>{data.eventTitle || "-"}</span></div>
+    <div className="flex justify-between"><span className="text-muted-foreground">Título</span><span>{data.eventTitle || "-"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Data</span><span>{formattedEventDate}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Local</span><span>{data.eventLocation || "-"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Convidados</span><span>{data.guestCount || "-"}</span></div>
@@ -552,19 +552,19 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
         ) : null}
 
         <section>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Servicos Selecionados</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Serviços Selecionados</h4>
           <div className="mt-3 grid gap-4">
             {data.services?.length ? (
               data.services.map(renderService)
             ) : (
-              <p className="text-sm text-muted-foreground">Nenhum servico selecionado.</p>
+              <p className="text-sm text-muted-foreground">Nenhum serviço selecionado.</p>
             )}
           </div>
         </section>
 
         {data.optionalServices?.length ? (
           <section>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Opcoes Apresentadas</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Opções Apresentadas</h4>
             <div className="mt-3 grid gap-4">
               {data.optionalServices.map(renderService)}
             </div>
@@ -588,7 +588,7 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
 
         {data.footerNotes ? (
           <section>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Condicoes Gerais</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Condições Gerais</h4>
             <div className="mt-2 grid gap-2 text-sm">
               {data.footerNotes
                 .split(/\n+/)

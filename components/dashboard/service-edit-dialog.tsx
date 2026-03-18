@@ -141,9 +141,9 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle>Editar Servico</DialogTitle>
+          <DialogTitle>Editar Serviço</DialogTitle>
           <DialogDescription>
-            Atualize informacoes do servico.
+            Atualize informações do serviço.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
@@ -184,7 +184,7 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor={`description_pt_${service.id}`}>Descricao (PT)</Label>
+              <Label htmlFor={`description_pt_${service.id}`}>Descrição (PT)</Label>
               <Textarea id={`description_pt_${service.id}`} {...register("description_pt")} placeholder="Texto livre (contexto, notas)." />
             </div>
             <div className="grid gap-2">
@@ -195,7 +195,7 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor={`included_items_pt_${service.id}`}>Itens incluidos (PT)</Label>
+              <Label htmlFor={`included_items_pt_${service.id}`}>Itens incluídos (PT)</Label>
               <Textarea
                 id={`included_items_pt_${service.id}`}
                 {...register("included_items_pt")}
@@ -206,7 +206,7 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
               <p className="text-xs text-muted-foreground">Lista na proposta em &quot;Inclui&quot;. Um item por linha.</p>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`included_items_en_${service.id}`}>Itens incluidos (EN)</Label>
+              <Label htmlFor={`included_items_en_${service.id}`}>Itens incluídos (EN)</Label>
               <Textarea
                 id={`included_items_en_${service.id}`}
                 {...register("included_items_en")}
@@ -214,13 +214,13 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
                 rows={4}
                 className="font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground">Mesma lista em ingles.</p>
+              <p className="text-xs text-muted-foreground">Mesma lista em Inglês.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor={`pricing_type_${service.id}`}>Tipo de Preco</Label>
+              <Label htmlFor={`pricing_type_${service.id}`}>Tipo de Preço</Label>
               <select
                 id={`pricing_type_${service.id}`}
                 {...register("pricing_type")}
@@ -232,7 +232,7 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`base_price_${service.id}`}>Preco Base (EUR)</Label>
+              <Label htmlFor={`base_price_${service.id}`}>Preço Base (EUR)</Label>
               <Input
                 id={`base_price_${service.id}`}
                 type="number"

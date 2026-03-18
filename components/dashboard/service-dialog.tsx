@@ -173,14 +173,14 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Servico
+          Novo Serviço
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle>Novo Servico</DialogTitle>
+          <DialogTitle>Novo Serviço</DialogTitle>
           <DialogDescription>
-            Adicione um novo servico ao catalogo.
+            Adicione um novo serviço ao catálogo.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
@@ -272,8 +272,8 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="description_pt">Descricao (PT)</Label>
-              <Textarea id="description_pt" {...register("description_pt")} placeholder="Texto livre sobre o servico (contexto, notas)." />
+              <Label htmlFor="description_pt">Descrição (PT)</Label>
+              <Textarea id="description_pt" {...register("description_pt")} placeholder="Texto livre sobre o serviço (contexto, notas)." />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description_en">Description (EN)</Label>
@@ -308,7 +308,7 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="pricing_type">Tipo de Preco</Label>
+              <Label htmlFor="pricing_type">Tipo de Preço</Label>
               <select
                 id="pricing_type"
                 {...register("pricing_type")}
@@ -320,7 +320,7 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="base_price">Preco Base (EUR)</Label>
+              <Label htmlFor="base_price">Preço Base (EUR)</Label>
               <Input
                 id="base_price"
                 type="number"
@@ -373,7 +373,7 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
 
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? "A criar..." : "Criar Servico"}
+              {loading ? "A criar..." : "Criar Serviço"}
             </Button>
           </DialogFooter>
         </form>

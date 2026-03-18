@@ -115,7 +115,7 @@ export function AppSidebar() {
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton>
                     <User2 />
-                    <span>Username</span>
+                        <span>Utilizador</span>
                     <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
@@ -124,20 +124,20 @@ export function AppSidebar() {
                   className="w-[--radix-popper-anchor-width]"
                 >
                   <DropdownMenuItem>
-                    <span>Account</span>
+                    <span>Conta</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <span>Billing</span>
+                    <span>Faturação</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
-                    <span>Sign out</span>
+                    <span>Sair</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <SidebarMenuButton>
                 <User2 />
-                <span>Username</span>
+                <span>Utilizador</span>
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>

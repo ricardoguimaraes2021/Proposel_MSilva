@@ -29,7 +29,7 @@ export function ServicesTable({ services, categories }: ServicesTableProps) {
     const router = useRouter()
 
     const handleDelete = async (serviceId: string) => {
-        const confirmed = window.confirm("Tem a certeza que pretende eliminar este servico?")
+        const confirmed = window.confirm("Tem a certeza que pretende eliminar este serviço?")
         if (!confirmed) return
 
         try {
@@ -50,17 +50,17 @@ export function ServicesTable({ services, categories }: ServicesTableProps) {
                         <TableHead>Categoria</TableHead>
                         <TableHead>Preço Base</TableHead>
                         <TableHead>Tipo</TableHead>
-                        <TableHead>Incluidos</TableHead>
-                        <TableHead>Opcoes</TableHead>
+                        <TableHead>Incluídos</TableHead>
+                        <TableHead>Opções</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Acoes</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {services.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={8} className="h-24 text-center">
-                                Nenhum servico encontrado.
+                                Nenhum serviço encontrado.
                             </TableCell>
                         </TableRow>
                     ) : (

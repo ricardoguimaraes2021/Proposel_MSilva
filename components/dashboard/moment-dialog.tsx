@@ -22,7 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 const momentSchema = z.object({
   key: z.string().min(1, "Key e obrigatoria"),
-  title_pt: z.string().min(1, "Titulo (PT) e obrigatorio"),
+  title_pt: z.string().min(1, "Título (PT) e obrigatório"),
   title_en: z.string().min(1, "Title (EN) is required"),
   sort_order: z.number().min(1, "Ordem deve ser >= 1"),
   is_active: z.boolean().optional(),
@@ -91,7 +91,7 @@ export function MomentDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="title_pt">Titulo (PT)</Label>
+              <Label htmlFor="title_pt">Título (PT)</Label>
               <Input id="title_pt" {...register("title_pt")} />
               {errors.title_pt && <span className="text-red-500 text-xs">{errors.title_pt.message}</span>}
             </div>
