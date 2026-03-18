@@ -56,7 +56,8 @@ export async function GET(request: Request) {
         }
 
         if (a.calendar_event_id) {
-            const e = manualMap.get(a.calendar_event_id)
+            // Supabase returns loosely-typed data here; ensure TS understands the shape we read.
+            const e = manualMap.get(a.calendar_event_id) as any
             if (e) {
                 service = {
                     title: e.title,
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
                 }
             }
         } else if (a.proposal_id) {
-            const p = proposalMap.get(a.proposal_id)
+            const p = proposalMap.get(a.proposal_id) as any
             if (p) {
                 service = {
                     title: p.event_title || eventTypeLabel(p),

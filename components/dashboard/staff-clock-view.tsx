@@ -34,6 +34,8 @@ interface StaffMember {
     first_name: string
     last_name: string
     is_active: boolean
+    phone?: string | null
+    nif?: string | null
     roles: StaffMemberRole[]
 }
 

@@ -48,7 +48,8 @@ export async function GET() {
     let service: { id: string; title: string; eventDate: string; clientName: string | null } | null = null
 
     if (a.calendar_event_id) {
-      const e = manualMap.get(a.calendar_event_id)
+      // Supabase retorna tipos soltos; garantimos o shape via cast.
+      const e = manualMap.get(a.calendar_event_id) as any
       if (e?.event_date) {
         service = {
           id: e.id,
@@ -58,7 +59,7 @@ export async function GET() {
         }
       }
     } else if (a.proposal_id) {
-      const p = proposalMap.get(a.proposal_id)
+      const p = proposalMap.get(a.proposal_id) as any
       if (p?.event_date) {
         service = {
           id: p.id,

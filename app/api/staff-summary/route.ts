@@ -82,13 +82,14 @@ export async function GET(request: Request) {
         let title: string | null = null
         let eventDate: string | null = null
         if (a.calendar_event_id) {
-            const e = manualMap.get(a.calendar_event_id)
+            // Supabase retorna tipos soltos aqui; garantimos o shape via cast.
+            const e = manualMap.get(a.calendar_event_id) as any
             if (e) {
                 title = e.title ?? null
                 eventDate = e.event_date ?? null
             }
         } else if (a.proposal_id) {
-            const p = proposalMap.get(a.proposal_id)
+            const p = proposalMap.get(a.proposal_id) as any
             if (p) {
                 title = p.event_title || eventTypeLabel(p)
                 eventDate = p.event_date ?? null

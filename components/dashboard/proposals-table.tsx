@@ -84,7 +84,7 @@ export function ProposalsTable({
   const [errorId, setErrorId] = useState<string | null>(null)
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null)
 
-  const handleOpenPdf = (proposalId?: string | null, lang: "pt" | "en") => {
+  const handleOpenPdf = (proposalId: string | null, lang: "pt" | "en") => {
     const normalizedId = normalizeProposalId(proposalId)
     if (!normalizedId) {
       setErrorId("invalid-id")
@@ -120,7 +120,7 @@ export function ProposalsTable({
       })
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || "Nao foi possivel atualizar o estado.")
+        throw new Error(errorText || "Não foi possível atualizar o estado.")
       }
       router.refresh()
     } catch (error) {
@@ -136,7 +136,7 @@ export function ProposalsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Referencia</TableHead>
+            <TableHead>Referência</TableHead>
             <TableHead>Cliente</TableHead>
             <TableHead>Evento</TableHead>
             <TableHead>Data</TableHead>
@@ -144,7 +144,7 @@ export function ProposalsTable({
             <TableHead>Status</TableHead>
             <TableHead>PDF</TableHead>
             <TableHead>Criado</TableHead>
-            <TableHead className="text-right">Acoes</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -218,7 +218,7 @@ export function ProposalsTable({
           ) : (
             <TableRow>
               <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
-                Ainda nao existem propostas.
+                Ainda não existem propostas.
               </TableCell>
             </TableRow>
           )}
