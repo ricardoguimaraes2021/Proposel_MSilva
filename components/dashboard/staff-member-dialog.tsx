@@ -182,7 +182,7 @@ export function StaffMemberDialog({
                                 value={phone}
                                 onChange={(e) => setPhone(sanitizePhoneInput(e.target.value, 15))}
                                 inputMode="tel"
-                                pattern="\\+?[0-9]*"
+                                pattern="[+]?[0-9]*"
                                 maxLength={16}
                                 placeholder="+351 912 345 678"
                             />

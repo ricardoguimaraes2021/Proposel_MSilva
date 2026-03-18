@@ -109,7 +109,7 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
       router.refresh()
     } catch (error) {
       console.error(error)
-      setMessage("Nao foi possivel guardar. Tente novamente.")
+      setMessage("Não foi possível guardar. Tente novamente.")
     } finally {
       setSaving(false)
     }
@@ -145,7 +145,7 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
       <Card>
         <CardHeader>
           <CardTitle>Contacto</CardTitle>
-          <CardDescription>Informacao usada na proposta e rodape.</CardDescription>
+          <CardDescription>Informação usada na proposta e rodapé.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2">
@@ -155,7 +155,7 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
               value={formData.contact_phone}
               onChange={handleDigits("contact_phone", 15)}
               inputMode="tel"
-              pattern="\\+?[0-9]*"
+              pattern="[+]?[0-9]*"
               maxLength={16}
             />
           </div>
@@ -181,7 +181,7 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
       <Card>
         <CardHeader>
           <CardTitle>Morada</CardTitle>
-          <CardDescription>Localizacao da empresa para referencias legais.</CardDescription>
+          <CardDescription>Localização da empresa para referências legais.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2 md:col-span-2">
@@ -193,11 +193,11 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
             <Input id="address_city" value={formData.address_city} onChange={handleChange("address_city")} />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="address_postal_code">Codigo Postal</Label>
+            <Label htmlFor="address_postal_code">Código Postal</Label>
             <Input id="address_postal_code" value={formData.address_postal_code} onChange={handleChange("address_postal_code")} />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="address_country">Pais</Label>
+            <Label htmlFor="address_country">País</Label>
             <Input id="address_country" value={formData.address_country} onChange={handleChange("address_country")} />
           </div>
         </CardContent>
@@ -206,7 +206,7 @@ export function CompanyProfileForm({ initialData }: { initialData?: CompanyProfi
       <CardFooter className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{message}</p>
         <Button type="submit" disabled={saving}>
-          {saving ? "A guardar..." : "Guardar alteracoes"}
+          {saving ? "A guardar..." : "Guardar alterações"}
         </Button>
       </CardFooter>
     </form>

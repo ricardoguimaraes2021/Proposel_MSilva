@@ -155,7 +155,7 @@ export function ClientEditDialog({ client }: { client: ClientRow }) {
                 value={form.phone}
                 onChange={handleDigits("phone", 15)}
                 inputMode="tel"
-                pattern="\\+?[0-9]*"
+                pattern="[+]?[0-9]*"
                 maxLength={16}
               />
             </div>

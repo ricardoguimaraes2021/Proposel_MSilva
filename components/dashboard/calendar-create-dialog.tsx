@@ -311,7 +311,7 @@ export function CalendarCreateDialog({ date, open, onOpenChange, onCreated }: Ca
                                 placeholder="+351 912 345 678"
                                 className={inputClass}
                                 inputMode="tel"
-                                pattern="\\+?[0-9]*"
+                                pattern="[+]?[0-9]*"
                                 maxLength={16}
                             />
                         </div>
