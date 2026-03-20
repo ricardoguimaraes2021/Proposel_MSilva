@@ -53,3 +53,4 @@ next-env.d.ts
 SETUP_REMOTE.md
 .github/PRE_COMMIT_CHECKLIST.md
 INCREMENTAL_COMMITS.md
+*.sql

@@ -1,7 +1,0 @@
-BEGIN;
-
-ALTER TABLE calendar_events
-  ADD COLUMN IF NOT EXISTS client_company TEXT,
-  ADD COLUMN IF NOT EXISTS client_nif TEXT;
-
-COMMIT;
