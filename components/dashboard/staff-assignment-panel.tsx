@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2, Clock, DollarSign } from "lucide-react"
+import { Plus, Trash2, Clock, DollarSign, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -59,13 +59,24 @@ export function StaffAssignmentPanel({
     const [allRoles, setAllRoles] = useState<StaffRole[]>([])
     const [loading, setLoading] = useState(true)
     const [showAdd, setShowAdd] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
 
-    // Form state para nova atribuição
+    // Form state
     const [selectedStaffId, setSelectedStaffId] = useState("")
     const [selectedRoleId, setSelectedRoleId] = useState("")
     const [startTime, setStartTime] = useState("")
     const [endTime, setEndTime] = useState("")
     const [customRate, setCustomRate] = useState("")
+
+    const resetForm = () => {
+        setSelectedStaffId("")
+        setSelectedRoleId("")
+        setStartTime("")
+        setEndTime("")
+        setCustomRate("")
+        setEditingId(null)
+        setShowAdd(false)
+    }
 
     const fetchAssignments = useCallback(async () => {
         const param = calendarEventId
@@ -91,18 +102,29 @@ export function StaffAssignmentPanel({
         Promise.all([fetchAssignments(), fetchStaffData()]).then(() => setLoading(false))
     }, [fetchAssignments, fetchStaffData])
 
-    // Quando seleciona um staff, auto-selecionar a primeira role do staff se tiver
     useEffect(() => {
-        if (selectedStaffId) {
+        if (selectedStaffId && !editingId) {
             const member = allStaff.find((s) => s.id === selectedStaffId)
             if (member && member.roles.length > 0 && !selectedRoleId) {
                 setSelectedRoleId(member.roles[0].role_id)
             }
         }
-    }, [selectedStaffId, allStaff, selectedRoleId])
+    }, [selectedStaffId, allStaff, selectedRoleId, editingId])
 
-    const buildTimestamp = (time: string) => {
-        if (!time || !serviceDate) return null
+    const buildTimestamp = (time: string, existingTimestamp?: string | null) => {
+        if (!time) return null
+        
+        // Se estamos a editar e a hora já estava definida, tentamos preservar a data original do assignment
+        if (existingTimestamp) {
+            const d = new Date(existingTimestamp)
+            const [hours, minutes] = time.split(':')
+            d.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
+            
+            // Adjust to local ISO string keeping timezone
+            return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString()
+        }
+        
+        if (!serviceDate) return null
         return `${serviceDate}T${time}:00`
     }
 
@@ -123,12 +145,36 @@ export function StaffAssignmentPanel({
             }),
         })
 
-        setSelectedStaffId("")
-        setSelectedRoleId("")
-        setStartTime("")
-        setEndTime("")
-        setCustomRate("")
+        resetForm()
+        fetchAssignments()
+    }
+
+    const handleEditClick = (a: Assignment) => {
+        setEditingId(a.id)
+        setSelectedStaffId(a.staff_member_id)
+        setSelectedRoleId(a.role_id)
+        setStartTime(a.start_time ? new Date(a.start_time).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }) : "")
+        setEndTime(a.end_time ? new Date(a.end_time).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }) : "")
+        setCustomRate(a.custom_hourly_rate !== null ? String(a.custom_hourly_rate) : "")
         setShowAdd(false)
+    }
+
+    const handleSaveEdit = async (a: Assignment) => {
+        if (!selectedStaffId || !selectedRoleId) return
+
+        await fetch(`/api/service-staff/${a.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                staffMemberId: selectedStaffId,
+                roleId: selectedRoleId,
+                startTime: buildTimestamp(startTime, a.start_time),
+                endTime: buildTimestamp(endTime, a.end_time),
+                customHourlyRate: customRate ? parseFloat(customRate) : null,
+            }),
+        })
+
+        resetForm()
         fetchAssignments()
     }
 
@@ -160,44 +206,103 @@ export function StaffAssignmentPanel({
             {/* Lista de staff atribuído */}
             {assignments.length > 0 && (
                 <div className="space-y-2">
-                    {assignments.map((a) => (
-                        <div
-                            key={a.id}
-                            className="flex items-center justify-between p-2 rounded-md border text-sm"
-                        >
-                            <div className="flex-1">
-                                <span className="font-medium">
-                                    {a.staff_members?.first_name} {a.staff_members?.last_name}
-                                </span>
-                                <span className="text-muted-foreground ml-2">— {a.staff_roles?.name}</span>
+                    {assignments.map((a) => {
+                        if (editingId === a.id) {
+                            return (
+                                <div key={a.id} className="space-y-3 p-3 rounded-md border bg-muted/30">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-xs font-semibold">A editar atribuição</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">Funcionário</Label>
+                                            <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
+                                                <SelectTrigger className="h-8 text-sm">
+                                                    <SelectValue placeholder="Selecionar..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {allStaff.map((s) => (
+                                                        <SelectItem key={s.id} value={s.id}>
+                                                            {s.first_name} {s.last_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">Função</Label>
+                                            <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+                                                <SelectTrigger className="h-8 text-sm">
+                                                    <SelectValue placeholder="Selecionar..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {allRoles
+                                                        .filter((r) => r.is_active || r.id === a.role_id)
+                                                        .map((r) => (
+                                                            <SelectItem key={r.id} value={r.id}>
+                                                                {r.name} ({r.default_hourly_rate}€/h)
+                                                            </SelectItem>
+                                                        ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    {showTimeFields && (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div className="space-y-1">
+                                                <Label className="text-xs">Entrada</Label>
+                                                <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="h-8 text-sm" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-xs">Saída</Label>
+                                                <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="h-8 text-sm" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-xs">€/h (override)</Label>
+                                                <Input type="number" step="0.5" value={customRate} onChange={(e) => setCustomRate(e.target.value)} className="h-8 text-sm" placeholder="—" />
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="flex gap-2 justify-end">
+                                        <Button size="sm" variant="outline" onClick={resetForm} className="h-7 text-xs">Cancelar</Button>
+                                        <Button size="sm" onClick={() => handleSaveEdit(a)} disabled={!selectedStaffId || !selectedRoleId} className="h-7 text-xs">Guardar</Button>
+                                    </div>
+                                </div>
+                            )
+                        }
+
+                        return (
+                            <div key={a.id} className="flex items-center justify-between p-2 rounded-md border text-sm">
+                                <div className="flex-1">
+                                    <span className="font-medium">{a.staff_members?.first_name} {a.staff_members?.last_name}</span>
+                                    <span className="text-muted-foreground ml-2">— {a.staff_roles?.name}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                    {showTimeFields && a.start_time && a.end_time && (
+                                        <span className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {new Date(a.start_time).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}
+                                            –
+                                            {new Date(a.end_time).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}
+                                            <span className="font-mono">({a.hours_worked ?? 0}h)</span>
+                                        </span>
+                                    )}
+                                    {showTimeFields && a.total_pay != null && (
+                                        <span className="flex items-center gap-1 font-mono">
+                                            <DollarSign className="h-3 w-3" />
+                                            {Number(a.total_pay).toFixed(2)}€
+                                        </span>
+                                    )}
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => handleEditClick(a)}>
+                                        <Edit2 className="h-3 w-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => handleDelete(a.id)}>
+                                        <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                {showTimeFields && a.start_time && a.end_time && (
-                                    <span className="flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
-                                        {new Date(a.start_time).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}
-                                        –
-                                        {new Date(a.end_time).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}
-                                        <span className="font-mono">({a.hours_worked ?? 0}h)</span>
-                                    </span>
-                                )}
-                                {showTimeFields && a.total_pay != null && (
-                                    <span className="flex items-center gap-1 font-mono">
-                                        <DollarSign className="h-3 w-3" />
-                                        {Number(a.total_pay).toFixed(2)}€
-                                    </span>
-                                )}
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 text-destructive hover:text-destructive"
-                                    onClick={() => handleDelete(a.id)}
-                                >
-                                    <Trash2 className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </div>
-                    ))}
+                        )
+                    })}
 
                     {/* Totais */}
                     {showTimeFields && assignments.length > 0 && (totalHours > 0 || totalPay > 0) && (
