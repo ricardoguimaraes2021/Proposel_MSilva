@@ -268,6 +268,27 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginBottom: 4,
   },
+  // Cabeçalho repetido na página de serviços (mini-header)
+  pageHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingBottom: 10,
+    marginBottom: 16,
+  },
+  pageHeaderTitle: {
+    fontSize: 10,
+    letterSpacing: 1,
+    color: colors.brand,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+  },
+  pageHeaderMeta: {
+    fontSize: 9,
+    color: colors.textMuted,
+  },
 })
 
 function ServiceBlock({
@@ -352,9 +373,27 @@ export function ProposalPdfDocument({
     ? data.footerNotes.split(/\n+/).map((l) => l.trim()).filter(Boolean)
     : []
 
+  // Secções de enquadramento (ex: intro, notas)
+  const framingSections = data.sections ?? []
+
+  // Mini-cabeçalho reutilizável para páginas 2+
+  const miniHeader = (
+    <View style={styles.pageHeader} fixed>
+      <Text style={styles.pageHeaderTitle}>{data.companyName}</Text>
+      <Text style={styles.pageHeaderMeta}>
+        {data.clientName} · {[data.eventType || labels.eventFallback, formattedEventDate].join(" | ")}
+      </Text>
+    </View>
+  )
+
   return (
     <Document title={data.documentTitle || (lang === "en" ? "Proposal" : "Proposta")}>
+
+      {/* ============================================================
+          PÁGINA 1: Cabeçalho + Cliente + Evento + Contacto + Enquadramento
+      ============================================================ */}
       <Page size="A4" style={styles.page}>
+        {/* Cabeçalho principal */}
         <View style={styles.header}>
           <View style={styles.identity}>
             <Text style={styles.eyebrow}>{labels.eyebrow}</Text>
@@ -373,6 +412,7 @@ export function ProposalPdfDocument({
           ) : null}
         </View>
 
+        {/* Dados do cliente */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{labels.client}</Text>
           <View style={styles.row}><Text style={styles.rowLabel}>{labels.name}</Text><Text>{data.clientName || "—"}</Text></View>
@@ -390,6 +430,7 @@ export function ProposalPdfDocument({
           ) : null}
         </View>
 
+        {/* Dados do evento */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{labels.event}</Text>
           <View style={styles.row}><Text style={styles.rowLabel}>{labels.title}</Text><Text>{data.eventTitle || "—"}</Text></View>
@@ -398,6 +439,7 @@ export function ProposalPdfDocument({
           <View style={styles.row}><Text style={styles.rowLabel}>{labels.guests}</Text><Text>{data.guestCount || "—"}</Text></View>
         </View>
 
+        {/* Contacto da empresa — sempre na página 1, abaixo dos dados */}
         {contactLines.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{labels.contact}</Text>
@@ -407,6 +449,25 @@ export function ProposalPdfDocument({
           </View>
         ) : null}
 
+        {/* Secções de enquadramento (intro/notas do orçamento) — após contacto, ainda na p.1 */}
+        {framingSections.map((sec, i) => (
+          <View key={i} style={styles.section}>
+            <Text style={styles.sectionTitle}>{sec.title}</Text>
+            {sec.body.split(/\n+/).map((line, j) => (
+              <Text key={j} style={styles.paragraph}>{line.trim()}</Text>
+            ))}
+          </View>
+        ))}
+      </Page>
+
+      {/* ============================================================
+          PÁGINA 2: Serviços selecionados + opcionais + totais
+          (sempre começa numa nova página)
+      ============================================================ */}
+      <Page size="A4" style={styles.page}>
+        {miniHeader}
+
+        {/* Serviços selecionados */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{labels.servicesSelected}</Text>
           {data.services?.length
@@ -416,6 +477,7 @@ export function ProposalPdfDocument({
             : <Text style={styles.listItem}>{labels.noServices}</Text>}
         </View>
 
+        {/* Serviços opcionais apresentados */}
         {data.optionalServices?.length ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{labels.optionsPresented}</Text>
@@ -425,17 +487,7 @@ export function ProposalPdfDocument({
           </View>
         ) : null}
 
-        {data.sections?.length
-          ? data.sections.map((sec, i) => (
-              <View key={i} style={styles.section}>
-                <Text style={styles.sectionTitle}>{sec.title}</Text>
-                {sec.body.split(/\n+/).map((line, j) => (
-                  <Text key={j} style={styles.paragraph}>{line.trim()}</Text>
-                ))}
-              </View>
-            ))
-          : null}
-
+        {/* Total */}
         <View style={styles.totals}>
           <View style={styles.totalRow}>
             <Text style={styles.rowLabel}>{labels.subtotal}</Text>
@@ -444,6 +496,9 @@ export function ProposalPdfDocument({
         </View>
       </Page>
 
+      {/* ============================================================
+          ÚLTIMA PÁGINA: Condições Gerais (separada, apenas se existir)
+      ============================================================ */}
       {footerParagraphs.length > 0 ? (
         <Page size="A4" style={styles.conditionsPage}>
           <Text style={styles.conditionsTitle}>{labels.generalTerms}</Text>
