@@ -34,8 +34,12 @@ type ProposalServiceOptionRow = {
 
 type IncludedItemRow = {
   service_id: string
-  text_pt: string
-  text_en?: string
+  text_pt: string | null
+  text_en?: string | null
+  catalog_item?: {
+    name_pt: string
+    name_en: string
+  } | null
   sort_order: number | null
 }
 
@@ -184,8 +188,16 @@ export function buildProposalPreviewData(
   const includedMap = new Map<string, string[]>()
   includedItems.forEach((item) => {
     const list = includedMap.get(item.service_id) ?? []
-    const text = lang === "en" ? (item.text_en ?? item.text_pt) : item.text_pt
-    list.push(text)
+    let ptText = item.text_pt ?? ""
+    let enText = item.text_en ?? ptText
+    if (item.catalog_item) {
+      ptText = item.catalog_item.name_pt || ptText
+      enText = item.catalog_item.name_en || enText
+    }
+    const text = lang === "en" ? enText : ptText
+    if (text) {
+      list.push(text)
+    }
     includedMap.set(item.service_id, list)
   })
 

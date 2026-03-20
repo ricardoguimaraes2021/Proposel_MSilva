@@ -407,14 +407,14 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
 
   ${contactSection}
 
+  ${sectionBlocks}
+
   <section class="section">
     <h2>Serviços Selecionados</h2>
     ${servicesBlock}
   </section>
 
   ${optionalBlock}
-
-  ${sectionBlocks}
 
   <div class="totals">
     <div>
@@ -451,12 +451,12 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
     data.companyContact?.address ? { label: "Morada", value: data.companyContact.address } : null,
   ].filter(Boolean) as { label: string; value: string }[]
 
-  const renderService = (service: ProposalPreviewService) => {
+  const renderService = (service: ProposalPreviewService, index: number) => {
     const priceLabel = getPriceLabel(service.pricingType, service.unitPrice, service.priceNote)
     const quantityLabel = getQuantityLabel(service.pricingType, service.quantity)
 
     return (
-      <div key={service.name} className="rounded-md border p-4">
+      <div key={`${service.name}-${index}`} className="rounded-md border p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold">{service.name}</p>
@@ -551,6 +551,21 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
           </section>
         ) : null}
 
+        {sections.length ? (
+          <section>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Enquadramento</h4>
+            <div className="mt-2 grid gap-2 text-sm">
+              {sections.map((section) => (
+                <div key={section.title}>
+                  {section.lines.map((line, index) => (
+                    <p key={`${section.title}_${index}`}>{line}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section>
           <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Serviços Selecionados</h4>
           <div className="mt-3 grid gap-4">
@@ -567,21 +582,6 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
             <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Opções Apresentadas</h4>
             <div className="mt-3 grid gap-4">
               {data.optionalServices.map(renderService)}
-            </div>
-          </section>
-        ) : null}
-
-        {sections.length ? (
-          <section>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Enquadramento</h4>
-            <div className="mt-2 grid gap-2 text-sm">
-              {sections.map((section) => (
-                <div key={section.title}>
-                  {section.lines.map((line, index) => (
-                    <p key={`${section.title}_${index}`}>{line}</p>
-                  ))}
-                </div>
-              ))}
             </div>
           </section>
         ) : null}

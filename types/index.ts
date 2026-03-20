@@ -44,6 +44,7 @@ export type PricingType =
 export interface ServiceIncludedItem {
   id: string;
   serviceId: string;
+  catalogItemId?: number | null;
   sectionKey: string;
   text: {
     pt: string;

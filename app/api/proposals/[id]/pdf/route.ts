@@ -69,7 +69,7 @@ export async function GET(
   if (serviceIds.length > 0) {
     const { data } = await supabase
       .from("service_included_items")
-      .select("service_id, text_pt, text_en, sort_order")
+      .select("service_id, text_pt, text_en, sort_order, catalog_item:catalog_items(name_pt, name_en)")
       .in("service_id", serviceIds)
       .order("sort_order", { ascending: true })
     serviceIncludedItems = data ?? []

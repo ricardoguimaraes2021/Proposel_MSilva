@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { PricingType, Service } from "@/types"
+import { PricingType, Service, ServiceIncludedItem } from "@/types"
 import { ServiceDialog } from "@/components/dashboard/service-dialog"
 import { ServicesTable } from "@/components/dashboard/services-table"
 
@@ -58,18 +58,21 @@ export default async function ServicesPage() {
     { data: categories, error: categoriesError },
     { data: includedItems, error: includedError },
     { data: pricedOptions, error: optionsError },
+    { data: catalogItems, error: catalogError },
   ] = await Promise.all([
     supabase.from("services").select("*").order("sort_order", { ascending: true }),
     supabase.from("service_categories").select("*").order("sort_order", { ascending: true }),
-    supabase.from("service_included_items").select("id, service_id, text_pt, text_en, sort_order").order("sort_order", { ascending: true }),
+    supabase.from("service_included_items").select("id, service_id, text_pt, text_en, sort_order, catalog_item_id").order("sort_order", { ascending: true }),
     supabase.from("service_priced_options").select("id, service_id"),
+    supabase.from("catalog_items").select("id, name_pt, name_en, sort_order").order("sort_order", { ascending: true }),
   ])
 
-  if (servicesError || categoriesError || includedError || optionsError) {
+  if (servicesError || categoriesError || includedError || optionsError || catalogError) {
     console.error("Error fetching services:", servicesError)
     console.error("Error fetching categories:", categoriesError)
     console.error("Error fetching included items:", includedError)
     console.error("Error fetching priced options:", optionsError)
+    console.error("Error fetching catalog items:", catalogError)
     return <div>Erro ao carregar serviços.</div>
   }
 
@@ -77,10 +80,11 @@ export default async function ServicesPage() {
   const categoryRows = (categories ?? []) as CategoryRow[]
   const includedRows = (includedItems ?? []) as IncludedItemRow[]
   const optionRows = (pricedOptions ?? []) as PricedOptionRow[]
+  const catalogRows = (catalogItems ?? []) as any[]
 
   const categoryMap = new Map(categoryRows.map((category) => [category.id, category]))
   const includedCount = new Map<string, number>()
-  const includedItemsByService = new Map<string, { id: string; serviceId: string; sectionKey: string; text: { pt: string; en: string }; sortOrder: number }[]>()
+  const includedItemsByService = new Map<string, ServiceIncludedItem[]>()
   const optionCount = new Map<string, number>()
 
   includedRows.forEach((row) => {
@@ -89,6 +93,7 @@ export default async function ServicesPage() {
     list.push({
       id: row.id,
       serviceId: row.service_id,
+      catalogItemId: (row as any).catalog_item_id,
       sectionKey: "default",
       text: { pt: row.text_pt, en: row.text_en },
       sortOrder: row.sort_order,
@@ -153,9 +158,9 @@ export default async function ServicesPage() {
           <h1 className="text-2xl font-bold">Serviços</h1>
           <p className="text-muted-foreground">Gestão do catálogo de serviços.</p>
         </div>
-        <ServiceDialog categories={categoryRows} />
+        <ServiceDialog categories={categoryRows} catalogItems={catalogRows} />
       </div>
-      <ServicesTable services={mappedServices} categories={categoryRows} />
+      <ServicesTable services={mappedServices} categories={categoryRows} catalogItems={catalogRows} />
     </div>
   )
 }
