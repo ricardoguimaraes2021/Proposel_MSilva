@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation"
 interface ServicesTableProps {
     services: (Service & { includedCount: number; optionsCount: number })[]
     categories?: { id: string; name_pt: string }[]
+    catalogItems?: any[]
 }
 
 const pricingTypeLabels: Record<PricingType, string> = {
@@ -25,7 +26,7 @@ const pricingTypeLabels: Record<PricingType, string> = {
     on_request: "Sob consulta",
 }
 
-export function ServicesTable({ services, categories }: ServicesTableProps) {
+export function ServicesTable({ services, categories, catalogItems }: ServicesTableProps) {
     const router = useRouter()
 
     const handleDelete = async (serviceId: string) => {
@@ -76,7 +77,7 @@ export function ServicesTable({ services, categories }: ServicesTableProps) {
                                 <TableCell>
                                     {service.pricingType === "on_request"
                                         ? "Sob consulta"
-                                        : new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(service.basePrice ?? 0)}
+                                        : new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(service.basePrice ?? 0).replace(/\u00A0/g, ' ')}
                                 </TableCell>
                                 <TableCell>
                                     <Badge variant="outline">{pricingTypeLabels[service.pricingType]}</Badge>
@@ -90,7 +91,7 @@ export function ServicesTable({ services, categories }: ServicesTableProps) {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-2">
-                                        <ServiceEditDialog service={service} categories={categories} />
+                                        <ServiceEditDialog service={service} categories={categories} catalogItems={catalogItems} />
                                         <Button
                                             variant="destructive"
                                             size="sm"

@@ -73,7 +73,7 @@ export function CalendarEventDialog({ event, open, onOpenChange, onDeleted }: Ca
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[480px]">
+            <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <div className="flex items-start gap-3">
                         <span

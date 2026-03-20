@@ -61,7 +61,9 @@ export function CalendarCreateDialog({ date, open, onOpenChange, onCreated }: Ca
     })
 
     // Atualizar a data quando o dialog abre com uma data nova
-    const dateStr = date ? date.toISOString().slice(0, 10) : ""
+    const dateStr = date 
+        ? [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
+        : ""
 
     useEffect(() => {
         if (!open) return

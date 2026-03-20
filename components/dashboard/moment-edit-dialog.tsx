@@ -83,7 +83,7 @@ export function MomentEditDialog({ moment }: { moment: MomentRow }) {
           Editar
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Momento</DialogTitle>
           <DialogDescription>

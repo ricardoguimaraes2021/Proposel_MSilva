@@ -56,8 +56,11 @@ const normalizeTags = (value?: string) => {
   return tags.length ? tags : null
 }
 
-export function ServiceEditDialog({ service, categories }: { service: Service; categories?: CategoryRow[] }) {
+export function ServiceEditDialog({ service, categories, catalogItems }: { service: Service; categories?: CategoryRow[], catalogItems?: any[] }) {
   const [open, setOpen] = useState(false)
+  const [selectedCatalogItems, setSelectedCatalogItems] = useState<number[]>(
+    () => service.includedItems?.map(i => i.catalogItemId).filter(Boolean) as number[] || []
+  )
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -110,8 +113,7 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
         ...data,
         base_price: basePrice,
         tags: normalizeTags(data.tags),
-        included_items_pt: parseIncludedLines(data.included_items_pt),
-        included_items_en: parseIncludedLines(data.included_items_en),
+        service_included_items_payload: selectedCatalogItems.map(id => ({ catalog_item_id: id })),
       }
 
       const response = await fetch(`/api/services/${service.id}` , {
@@ -139,7 +141,7 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
           Editar
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Serviço</DialogTitle>
           <DialogDescription>
@@ -193,29 +195,27 @@ export function ServiceEditDialog({ service, categories }: { service: Service; c
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor={`included_items_pt_${service.id}`}>Itens incluídos (PT)</Label>
-              <Textarea
-                id={`included_items_pt_${service.id}`}
-                {...register("included_items_pt")}
-                placeholder="Um item por linha"
-                rows={4}
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">Lista na proposta em &quot;Inclui&quot;. Um item por linha.</p>
+          <div className="grid gap-2">
+            <Label>Itens do Catálogo Incluídos</Label>
+            <div className="h-48 overflow-y-auto border rounded-md p-3 space-y-2">
+               {catalogItems?.map(item => (
+                 <div key={item.id} className="flex items-center space-x-2">
+                   <Checkbox
+                     id={`edit_cat_item_${service.id}_${item.id}`}
+                     checked={selectedCatalogItems.includes(item.id)}
+                     onCheckedChange={(checked) => {
+                       if (checked) setSelectedCatalogItems(prev => [...prev, item.id])
+                       else setSelectedCatalogItems(prev => prev.filter(id => id !== item.id))
+                     }}
+                   />
+                   <Label htmlFor={`edit_cat_item_${service.id}_${item.id}`} className="text-sm font-normal cursor-pointer">
+                     {item.name_pt} <span className="text-muted-foreground ml-1">({item.name_en})</span>
+                   </Label>
+                 </div>
+               ))}
+               {!catalogItems?.length && <p className="text-sm text-muted-foreground p-2">Nenhum item no catálogo.</p>}
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor={`included_items_en_${service.id}`}>Itens incluídos (EN)</Label>
-              <Textarea
-                id={`included_items_en_${service.id}`}
-                {...register("included_items_en")}
-                placeholder="One item per line"
-                rows={4}
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">Mesma lista em Inglês.</p>
-            </div>
+            <p className="text-xs text-muted-foreground">Selecione os itens (do Catálogo) que compõem este menu/serviço.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

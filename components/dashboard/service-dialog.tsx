@@ -56,8 +56,9 @@ const normalizeTags = (value?: string) => {
   return tags.length ? tags : null
 }
 
-export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
+export function ServiceDialog({ categories, catalogItems }: { categories: CategoryRow[], catalogItems?: any[] }) {
   const [open, setOpen] = useState(false)
+  const [selectedCatalogItems, setSelectedCatalogItems] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategories, setNewCategories] = useState<CategoryRow[]>([])
@@ -137,8 +138,7 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
         ...data,
         base_price: basePrice,
         tags: normalizeTags(data.tags),
-        included_items_pt: parseIncludedLines(data.included_items_pt),
-        included_items_en: parseIncludedLines(data.included_items_en),
+        service_included_items_payload: selectedCatalogItems.map(id => ({ catalog_item_id: id })),
       }
 
       const response = await fetch("/api/services", {
@@ -160,6 +160,7 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
         sort_order: 1,
         is_active: true,
       })
+      setSelectedCatalogItems([])
       router.refresh()
     } catch (error) {
       console.error(error)
@@ -176,7 +177,7 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
           Novo Serviço
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo Serviço</DialogTitle>
           <DialogDescription>
@@ -281,29 +282,27 @@ export function ServiceDialog({ categories }: { categories: CategoryRow[] }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="included_items_pt">Itens incluidos (PT)</Label>
-              <Textarea
-                id="included_items_pt"
-                {...register("included_items_pt")}
-                placeholder="Um item por linha (ex.: Rissóis, Croquetes, Empadas)"
-                rows={4}
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">Lista que aparece na proposta em &quot;Inclui&quot;. Um item por linha.</p>
+          <div className="grid gap-2">
+            <Label>Itens do Catálogo Incluídos</Label>
+            <div className="h-48 overflow-y-auto border rounded-md p-3 space-y-2">
+               {catalogItems?.map(item => (
+                 <div key={item.id} className="flex items-center space-x-2">
+                   <Checkbox
+                     id={`cat_item_${item.id}`}
+                     checked={selectedCatalogItems.includes(item.id)}
+                     onCheckedChange={(checked) => {
+                       if (checked) setSelectedCatalogItems(prev => [...prev, item.id])
+                       else setSelectedCatalogItems(prev => prev.filter(id => id !== item.id))
+                     }}
+                   />
+                   <Label htmlFor={`cat_item_${item.id}`} className="text-sm font-normal cursor-pointer">
+                     {item.name_pt} <span className="text-muted-foreground ml-1">({item.name_en})</span>
+                   </Label>
+                 </div>
+               ))}
+               {!catalogItems?.length && <p className="text-sm text-muted-foreground p-2">Nenhum item no catálogo.</p>}
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="included_items_en">Itens incluidos (EN)</Label>
-              <Textarea
-                id="included_items_en"
-                {...register("included_items_en")}
-                placeholder="Um item por linha (ex.: Rissóis, Croquetes, Empanadas)"
-                rows={4}
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">Same list in English (one per line).</p>
-            </div>
+            <p className="text-xs text-muted-foreground">Selecione os itens (do Catálogo) que compõem este menu/serviço.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

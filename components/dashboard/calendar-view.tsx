@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { CalendarEventDialog } from "./calendar-event-dialog"
 import { CalendarCreateDialog } from "./calendar-create-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { CalendarDays, Plus, ChevronLeft, ChevronRight, MapPin, Users, FileText } from "lucide-react"
 import { formatDateShort } from "@/lib/utils"
 
@@ -37,13 +38,18 @@ export function CalendarView() {
     const [showEventDialog, setShowEventDialog] = useState(false)
     const [showCreateDialog, setShowCreateDialog] = useState(false)
     const [createDate, setCreateDate] = useState<Date | undefined>(undefined)
+    const [showDayListDialog, setShowDayListDialog] = useState(false)
+    const [dayListEvents, setDayListEvents] = useState<CalendarEventData[]>([])
 
     const fetchEvents = useCallback(async () => {
         setLoading(true)
         const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
         const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
-        const startStr = start.toISOString().slice(0, 10)
-        const endStr = end.toISOString().slice(0, 10)
+        start.setDate(start.getDate() - 7)
+        end.setDate(end.getDate() + 7)
+        const formatLocal = (d: Date) => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-')
+        const startStr = formatLocal(start)
+        const endStr = formatLocal(end)
 
         try {
             const res = await fetch(`/api/calendar-events?start=${startStr}&end=${endStr}`)
@@ -79,16 +85,15 @@ export function CalendarView() {
         .map((e) => new Date(e.eventDate + "T00:00:00"))
 
     const handleDayClick = (day: Date) => {
-        const dateStr = day.toISOString().slice(0, 10)
+        const dateStr = [day.getFullYear(), String(day.getMonth() + 1).padStart(2, '0'), String(day.getDate()).padStart(2, '0')].join('-')
         const dayEvents = eventsByDate[dateStr]
 
         if (dayEvents && dayEvents.length === 1) {
             setSelectedEvent(dayEvents[0])
             setShowEventDialog(true)
         } else if (dayEvents && dayEvents.length > 1) {
-            // Se múltiplos eventos, mostra o primeiro (podemos melhorar depois)
-            setSelectedEvent(dayEvents[0])
-            setShowEventDialog(true)
+            setDayListEvents(dayEvents)
+            setShowDayListDialog(true)
         } else {
             // Dia vazio → criar novo serviço
             setCreateDate(day)
@@ -323,6 +328,41 @@ export function CalendarView() {
                 onOpenChange={setShowCreateDialog}
                 onCreated={handleEventCreated}
             />
+
+            <Dialog open={showDayListDialog} onOpenChange={setShowDayListDialog}>
+                <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Eventos de {dayListEvents.length > 0 ? formatDateShort(dayListEvents[0].eventDate) : ""}</DialogTitle>
+                        <DialogDescription>Selecione o evento que deseja visualizar.</DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-[400px] overflow-y-auto divide-y border rounded-md">
+                        {dayListEvents.map((event) => (
+                            <button
+                                key={event.id}
+                                onClick={() => {
+                                    setShowDayListDialog(false)
+                                    setSelectedEvent(event)
+                                    setShowEventDialog(true)
+                                }}
+                                className="w-full text-left px-5 py-3 hover:bg-accent/50 transition-colors flex items-start gap-3"
+                            >
+                                <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${event.source === "proposal" ? "bg-blue-500" : "bg-emerald-500"}`} />
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-medium text-sm truncate">{event.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        {event.eventTime ? event.eventTime.slice(0, 5) : "Sem hora"}
+                                    </p>
+                                </div>
+                                {event.source === "proposal" && (
+                                    <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                                        Proposta
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

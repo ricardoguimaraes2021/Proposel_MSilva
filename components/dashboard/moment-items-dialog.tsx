@@ -127,7 +127,7 @@ export function MomentItemsDialog({ moment, catalogItems, momentItems }: MomentI
           Sugestoes
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[720px]">
+      <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Sugestoes para {moment.title_pt}</DialogTitle>
           <DialogDescription>

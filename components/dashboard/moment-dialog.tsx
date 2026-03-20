@@ -75,7 +75,7 @@ export function MomentDialog() {
           Novo Momento
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo Momento</DialogTitle>
           <DialogDescription>
