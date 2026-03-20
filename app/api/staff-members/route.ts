@@ -55,10 +55,9 @@ export async function POST(request: Request) {
 
     // Atribuir funções
     if (body.roles && body.roles.length > 0) {
-        const roleRows = body.roles.map((r: { roleId: string; customHourlyRate?: number | null }) => ({
+        const roleRows = body.roles.map((r: { roleId: string }) => ({
             staff_member_id: member.id,
             role_id: r.roleId,
-            custom_hourly_rate: r.customHourlyRate ?? null,
         }))
 
         const { error: rolesError } = await supabase

@@ -68,11 +68,6 @@ export function StaffMembersTable({ members, onEdit, onDelete, onHistory, upcomi
                                     {member.roles.map((mr) => (
                                         <Badge key={mr.id} variant="secondary" className="text-xs">
                                             {mr.staff_roles?.name ?? "?"}
-                                            {mr.custom_hourly_rate != null && (
-                                                <span className="ml-1 opacity-70">
-                                                    ({mr.custom_hourly_rate}€/h)
-                                                </span>
-                                            )}
                                         </Badge>
                                     ))}
                                     {member.roles.length === 0 && (

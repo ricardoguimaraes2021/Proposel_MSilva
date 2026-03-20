@@ -39,21 +39,16 @@ async function DashboardContent() {
     redirect("/auth/login")
   }
 
-  const today = new Date()
-  const todayIso = today.toISOString().slice(0, 10)
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-  const monthStartIso = monthStart.toISOString().slice(0, 10)
-  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59)
+  const todayIso = new Date().toISOString().slice(0, 10)
 
   const [
     { data: proposals, error: proposalsError },
     { data: proposalEvents, error: eventsError },
     { data: calendarEvents, error: calendarEventsError },
-    { data: assignmentsThisMonth, error: assignmentsError },
   ] = await Promise.all([
     supabase
       .from("proposals")
-      .select("id,status,total,subtotal,created_at"),
+      .select("id,status,created_at"),
     supabase
       .from("proposals")
       .select("id,event_title,event_type,event_type_custom_pt,event_date,event_location,guest_count,client_name")
@@ -66,11 +61,6 @@ async function DashboardContent() {
       .eq("status", "confirmed")
       .gte("event_date", todayIso)
       .order("event_date", { ascending: true }),
-    supabase
-      .from("service_staff_assignments")
-      .select("hours_worked,total_pay,start_time")
-      .gte("start_time", monthStart.toISOString())
-      .lte("start_time", monthEnd.toISOString()),
   ])
 
   if (proposalsError) {
@@ -82,9 +72,6 @@ async function DashboardContent() {
   if (calendarEventsError) {
     console.error("Error fetching calendar events:", calendarEventsError)
   }
-  if (assignmentsError) {
-    console.error("Error fetching staff assignments:", assignmentsError)
-  }
 
   const proposalRows = (proposals ?? []) as ProposalMetricRow[]
   const eventRows = (proposalEvents ?? []) as ProposalEventRow[]
@@ -92,9 +79,6 @@ async function DashboardContent() {
 
   const acceptedProposals = proposalRows.filter((row) => row.status === "accepted")
   const acceptedProposalsUpcoming = eventRows.length
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR" }).format(value)
 
   const eventTypeLabel = (event: ProposalEventRow) =>
     event.event_type_custom_pt ||
@@ -127,65 +111,58 @@ async function DashboardContent() {
     })),
   ].filter((e) => e.date)
 
-  const serviceKeys = combinedEvents.map((e) => e.key)
   let assignedKeys = new Set<string>()
-  if (serviceKeys.length) {
-    const proposalIds = eventRows.map((e) => e.id)
-    const manualIds = manualRows.map((e) => e.id)
-    const assignments = []
-    if (proposalIds.length) {
-      const { data } = await supabase
-        .from("service_staff_assignments")
-        .select("proposal_id")
-        .in("proposal_id", proposalIds)
-      assignments.push(...(data ?? []))
-    }
-    if (manualIds.length) {
-      const { data } = await supabase
-        .from("service_staff_assignments")
-        .select("calendar_event_id")
-        .in("calendar_event_id", manualIds)
-      assignments.push(...(data ?? []))
-    }
-    assignedKeys = new Set(
-      assignments
-        .map((a: { proposal_id?: string | null; calendar_event_id?: string | null }) => {
-          if (a.proposal_id) return `proposal:${a.proposal_id}`
-          if (a.calendar_event_id) return `manual:${a.calendar_event_id}`
-          return null
-        })
-        .filter(Boolean) as string[],
-    )
+  const proposalIds = eventRows.map((e) => e.id)
+  const manualIds = manualRows.map((e) => e.id)
+  const assignments: { proposal_id?: string | null; calendar_event_id?: string | null }[] = []
+
+  if (proposalIds.length) {
+    const { data } = await supabase
+      .from("service_staff_assignments")
+      .select("proposal_id")
+      .in("proposal_id", proposalIds)
+    assignments.push(...(data ?? []))
   }
+  if (manualIds.length) {
+    const { data } = await supabase
+      .from("service_staff_assignments")
+      .select("calendar_event_id")
+      .in("calendar_event_id", manualIds)
+    assignments.push(...(data ?? []))
+  }
+  assignedKeys = new Set(
+    assignments
+      .map((a) => {
+        if (a.proposal_id) return `proposal:${a.proposal_id}`
+        if (a.calendar_event_id) return `manual:${a.calendar_event_id}`
+        return null
+      })
+      .filter(Boolean) as string[],
+  )
 
   const servicesWithoutStaff = combinedEvents.filter((e) => !assignedKeys.has(e.key))
-  const totalHours = (assignmentsThisMonth ?? []).reduce((sum, row) => sum + Number(row.hours_worked ?? 0), 0)
-  const totalPay = (assignmentsThisMonth ?? []).reduce((sum, row) => sum + Number(row.total_pay ?? 0), 0)
 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
       <p className="text-muted-foreground mb-6">Bem-vindo, {user.email}</p>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-lg border bg-white p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Serviços sem staff</p>
           <p className="mt-2 text-2xl font-semibold">{servicesWithoutStaff.length}</p>
           <div className="mt-3">
             <Button asChild size="sm" variant="outline">
-              <Link href="/dashboard/clock">Abrir Clock In/Out</Link>
+              <Link href="/dashboard/staff">Gerir Staff</Link>
             </Button>
           </div>
         </div>
         <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Horas este mês</p>
-          <p className="mt-2 text-2xl font-semibold">{totalHours.toFixed(1)}h</p>
-          <p className="mt-1 text-xs text-muted-foreground">Desde {formatDateShort(monthStartIso, "-")}</p>
-        </div>
-        <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">A pagar este mês</p>
-          <p className="mt-2 text-2xl font-semibold">{formatCurrency(totalPay)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Baseado no registo de horas</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Próximos serviços</p>
+          <p className="mt-2 text-2xl font-semibold">{combinedEvents.length}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Propostas + serviços manuais futuros
+          </p>
         </div>
         <div className="rounded-lg border bg-white p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Propostas aceites (futuras)</p>
@@ -221,8 +198,10 @@ async function DashboardContent() {
                     {event.guestCount ? `${event.guestCount} pessoas` : "Convidados a definir"}
                   </p>
                   {!assignedKeys.has(event.key) ? (
-                    <p className="mt-1 text-xs font-medium text-amber-700">Sem staff</p>
-                  ) : null}
+                    <p className="mt-1 text-xs font-medium text-amber-700">Sem staff atribuído</p>
+                  ) : (
+                    <p className="mt-1 text-xs font-medium text-emerald-700">Staff atribuído ✓</p>
+                  )}
                 </div>
               </div>
             ))

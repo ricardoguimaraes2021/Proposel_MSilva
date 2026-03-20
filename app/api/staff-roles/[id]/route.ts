@@ -13,7 +13,6 @@ export async function PUT(
         .from("staff_roles")
         .update({
             name: body.name,
-            default_hourly_rate: body.defaultHourlyRate,
             is_active: body.isActive,
             sort_order: body.sortOrder,
             updated_at: new Date().toISOString(),

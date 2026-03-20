@@ -20,7 +20,6 @@ export async function POST(request: Request) {
         .from("staff_roles")
         .insert({
             name: body.name,
-            default_hourly_rate: body.defaultHourlyRate ?? 0,
             sort_order: body.sortOrder ?? 0,
         })
         .select()

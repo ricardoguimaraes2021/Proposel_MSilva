@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Users, Briefcase, BarChart3 } from "lucide-react"
+import { Plus, Users, Briefcase } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -9,13 +9,11 @@ import { Input } from "@/components/ui/input"
 import { StaffMembersTable } from "./staff-members-table"
 import { StaffMemberDialog } from "./staff-member-dialog"
 import { StaffRolesSection } from "./staff-roles-section"
-import { StaffMonthlySummary } from "./staff-monthly-summary"
 import { StaffHistoryDialog } from "./staff-history-dialog"
 
 export interface StaffRole {
     id: string
     name: string
-    default_hourly_rate: number
     is_active: boolean
     sort_order: number
 }
@@ -24,7 +22,6 @@ export interface StaffMemberRole {
     id: string
     staff_member_id: string
     role_id: string
-    custom_hourly_rate: number | null
     staff_roles: StaffRole
 }
 
@@ -152,10 +149,6 @@ export function StaffView() {
                         <Briefcase className="h-4 w-4" />
                         Funções
                     </TabsTrigger>
-                    <TabsTrigger value="summary" className="gap-2">
-                        <BarChart3 className="h-4 w-4" />
-                        Resumo Mensal
-                    </TabsTrigger>
                 </TabsList>
 
                 {/* Tab Funcionários */}
@@ -195,11 +188,6 @@ export function StaffView() {
                 {/* Tab Funções */}
                 <TabsContent value="roles">
                     <StaffRolesSection roles={roles} onRolesChanged={fetchRoles} />
-                </TabsContent>
-
-                {/* Tab Resumo */}
-                <TabsContent value="summary">
-                    <StaffMonthlySummary />
                 </TabsContent>
             </Tabs>
 

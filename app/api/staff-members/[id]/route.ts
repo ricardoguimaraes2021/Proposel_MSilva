@@ -37,10 +37,9 @@ export async function PUT(
         if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
 
         if (body.roles.length > 0) {
-            const roleRows = body.roles.map((r: { roleId: string; customHourlyRate?: number | null }) => ({
+            const roleRows = body.roles.map((r: { roleId: string }) => ({
                 staff_member_id: id,
                 role_id: r.roleId,
-                custom_hourly_rate: r.customHourlyRate ?? null,
             }))
 
             const { error: rolesError } = await supabase

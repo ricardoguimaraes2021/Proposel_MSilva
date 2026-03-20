@@ -27,7 +27,6 @@ interface StaffMemberDialogProps {
 interface RoleSelection {
     roleId: string
     selected: boolean
-    customHourlyRate: string
 }
 
 export function StaffMemberDialog({
@@ -62,7 +61,6 @@ export function StaffMemberDialog({
                         return {
                             roleId: role.id,
                             selected: !!mr,
-                            customHourlyRate: mr?.custom_hourly_rate?.toString() ?? "",
                         }
                     })
                 )
@@ -76,7 +74,6 @@ export function StaffMemberDialog({
                     availableRoles.map((role) => ({
                         roleId: role.id,
                         selected: false,
-                        customHourlyRate: "",
                     }))
                 )
             }
@@ -86,12 +83,6 @@ export function StaffMemberDialog({
     const toggleRole = (roleId: string) => {
         setRoleSelections((prev) =>
             prev.map((r) => (r.roleId === roleId ? { ...r, selected: !r.selected } : r))
-        )
-    }
-
-    const setRoleRate = (roleId: string, rate: string) => {
-        setRoleSelections((prev) =>
-            prev.map((r) => (r.roleId === roleId ? { ...r, customHourlyRate: rate } : r))
         )
     }
 
@@ -106,10 +97,7 @@ export function StaffMemberDialog({
 
         const selectedRoles = roleSelections
             .filter((r) => r.selected)
-            .map((r) => ({
-                roleId: r.roleId,
-                customHourlyRate: r.customHourlyRate ? parseFloat(r.customHourlyRate) : null,
-            }))
+            .map((r) => ({ roleId: r.roleId }))
 
         const payload = {
             firstName: firstName.trim(),
@@ -226,20 +214,7 @@ export function StaffMemberDialog({
                                             className="flex-1 text-sm cursor-pointer"
                                         >
                                             {role.name}
-                                            <span className="text-muted-foreground ml-1">
-                                                (default: {role.default_hourly_rate}€/h)
-                                            </span>
                                         </label>
-                                        {sel?.selected && (
-                                            <Input
-                                                type="number"
-                                                step="0.5"
-                                                placeholder="€/h custom"
-                                                className="w-28 h-8 text-sm"
-                                                value={sel.customHourlyRate}
-                                                onChange={(e) => setRoleRate(role.id, e.target.value)}
-                                            />
-                                        )}
                                     </div>
                                 )
                             })}

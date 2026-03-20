@@ -16,22 +16,16 @@ export function StaffRolesSection({ roles, onRolesChanged }: StaffRolesSectionPr
     const [creating, setCreating] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [newName, setNewName] = useState("")
-    const [newRate, setNewRate] = useState("")
     const [editName, setEditName] = useState("")
-    const [editRate, setEditRate] = useState("")
 
     const handleCreate = async () => {
         if (!newName.trim()) return
         await fetch("/api/staff-roles", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: newName.trim(),
-                defaultHourlyRate: parseFloat(newRate) || 0,
-            }),
+            body: JSON.stringify({ name: newName.trim() }),
         })
         setNewName("")
-        setNewRate("")
         setCreating(false)
         onRolesChanged()
     }
@@ -39,7 +33,6 @@ export function StaffRolesSection({ roles, onRolesChanged }: StaffRolesSectionPr
     const handleStartEdit = (role: StaffRole) => {
         setEditingId(role.id)
         setEditName(role.name)
-        setEditRate(role.default_hourly_rate.toString())
     }
 
     const handleSaveEdit = async () => {
@@ -47,10 +40,7 @@ export function StaffRolesSection({ roles, onRolesChanged }: StaffRolesSectionPr
         await fetch(`/api/staff-roles/${editingId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: editName.trim(),
-                defaultHourlyRate: parseFloat(editRate) || 0,
-            }),
+            body: JSON.stringify({ name: editName.trim() }),
         })
         setEditingId(null)
         onRolesChanged()
@@ -81,19 +71,12 @@ export function StaffRolesSection({ roles, onRolesChanged }: StaffRolesSectionPr
                 {creating && (
                     <div className="flex items-center gap-2 p-3 rounded-md border bg-muted/30">
                         <Input
-                            placeholder="Nome da função"
+                            placeholder="Nome da função (ex: Copa, Sala, Bar)"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                             className="flex-1"
                             autoFocus
-                        />
-                        <Input
-                            type="number"
-                            step="0.5"
-                            placeholder="€/hora"
-                            value={newRate}
-                            onChange={(e) => setNewRate(e.target.value)}
-                            className="w-28"
+                            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                         />
                         <Button size="icon" onClick={handleCreate} disabled={!newName.trim()}>
                             <Save className="h-4 w-4" />
@@ -123,13 +106,7 @@ export function StaffRolesSection({ roles, onRolesChanged }: StaffRolesSectionPr
                                     onChange={(e) => setEditName(e.target.value)}
                                     className="flex-1"
                                     autoFocus
-                                />
-                                <Input
-                                    type="number"
-                                    step="0.5"
-                                    value={editRate}
-                                    onChange={(e) => setEditRate(e.target.value)}
-                                    className="w-28"
+                                    onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
                                 />
                                 <Button size="icon" onClick={handleSaveEdit}>
                                     <Save className="h-4 w-4" />
@@ -143,9 +120,6 @@ export function StaffRolesSection({ roles, onRolesChanged }: StaffRolesSectionPr
                                 <div className="flex-1">
                                     <span className="font-medium">{role.name}</span>
                                 </div>
-                                <span className="text-sm text-muted-foreground font-mono">
-                                    {role.default_hourly_rate}€/h
-                                </span>
                                 <Button
                                     size="icon"
                                     variant="ghost"
@@ -178,7 +152,6 @@ export function StaffRolesSection({ roles, onRolesChanged }: StaffRolesSectionPr
                                 className="flex items-center gap-3 p-2 rounded-md opacity-50"
                             >
                                 <span className="flex-1 line-through">{role.name}</span>
-                                <span className="text-sm font-mono">{role.default_hourly_rate}€/h</span>
                             </div>
                         ))}
                     </div>
