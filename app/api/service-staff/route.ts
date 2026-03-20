@@ -24,49 +24,6 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const body = await request.json()
 
-    // Calcular horas e pagamento
-    let hoursWorked: number | null = null
-    let totalPay: number | null = null
-
-    if (body.startTime && body.endTime) {
-        const start = new Date(body.startTime)
-        let end = new Date(body.endTime)
-        if (end.getTime() < start.getTime()) {
-            end = new Date(end.getTime() + 24 * 60 * 60 * 1000)
-        }
-        hoursWorked = Math.round(((end.getTime() - start.getTime()) / (1000 * 60 * 60)) * 100) / 100
-    }
-
-    // Determinar rate: override serviço → override funcionário → default role
-    let effectiveRate = body.customHourlyRate
-
-    if (effectiveRate == null && body.staffMemberId && body.roleId) {
-        // Buscar override do funcionário para esta role
-        const { data: memberRole } = await supabase
-            .from("staff_member_roles")
-            .select("custom_hourly_rate")
-            .eq("staff_member_id", body.staffMemberId)
-            .eq("role_id", body.roleId)
-            .single()
-
-        if (memberRole?.custom_hourly_rate != null) {
-            effectiveRate = memberRole.custom_hourly_rate
-        } else {
-            // Buscar default da role
-            const { data: role } = await supabase
-                .from("staff_roles")
-                .select("default_hourly_rate")
-                .eq("id", body.roleId)
-                .single()
-
-            effectiveRate = role?.default_hourly_rate ?? 0
-        }
-    }
-
-    if (hoursWorked != null && effectiveRate != null) {
-        totalPay = Math.round(hoursWorked * effectiveRate * 100) / 100
-    }
-
     const { data, error } = await supabase
         .from("service_staff_assignments")
         .insert({
@@ -74,11 +31,6 @@ export async function POST(request: Request) {
             proposal_id: body.proposalId || null,
             staff_member_id: body.staffMemberId,
             role_id: body.roleId,
-            start_time: body.startTime || null,
-            end_time: body.endTime || null,
-            custom_hourly_rate: body.customHourlyRate ?? null,
-            hours_worked: hoursWorked,
-            total_pay: totalPay,
             notes: body.notes || null,
         })
         .select("*, staff_members(*), staff_roles(*)")

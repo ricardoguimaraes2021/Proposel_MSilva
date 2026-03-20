@@ -187,8 +187,6 @@ export function CalendarEventDialog({ event, open, onOpenChange, onDeleted }: Ca
                         <StaffAssignmentPanel
                             calendarEventId={event.source === "manual" ? event.id : null}
                             proposalId={event.source === "proposal" && event.proposalId ? event.proposalId : null}
-                            serviceDate={event.eventDate}
-                            showTimeFields={false}
                         />
                     </div>
                 </div>
