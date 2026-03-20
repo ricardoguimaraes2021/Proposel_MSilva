@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     // Buscar propostas aceites com data de evento
     let proposalQuery = supabase
         .from("proposals")
-        .select("id,reference_number,client_name,client_email,client_phone,event_type,event_type_custom_pt,event_title,event_date,event_location,guest_count,event_notes,status,total,subtotal")
+        .select("id,reference_number,client_name,client_email,client_phone,client_company,client_nif,event_type,event_type_custom_pt,event_title,event_date,event_location,guest_count,event_notes,status,total,subtotal")
         .eq("status", "accepted")
         .not("event_date", "is", null)
 
@@ -67,6 +67,8 @@ export async function GET(request: Request) {
             clientName: p.client_name,
             clientEmail: p.client_email,
             clientPhone: p.client_phone,
+            clientCompany: p.client_company,
+            clientNif: p.client_nif,
             eventLocation: p.event_location,
             guestCount: p.guest_count,
             eventType: p.event_type,
