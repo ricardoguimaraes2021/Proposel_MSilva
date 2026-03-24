@@ -9,6 +9,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog"
 import { sanitizePhoneInput, validatePortugueseNif } from "@/lib/utils"
+import { DateInput } from "@/components/ui/date-input"
 
 interface CalendarCreateDialogProps {
     date?: Date
@@ -79,6 +80,11 @@ export function CalendarCreateDialog({ date, open, onOpenChange, onCreated }: Ca
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        const resolvedDate = form.eventDate || dateStr
+        if (!resolvedDate) {
+            setError("Data é obrigatória.")
+            return
+        }
         if (form.clientNif.trim() && !validatePortugueseNif(form.clientNif)) {
             setError("NIF inválido.")
             return
@@ -91,7 +97,7 @@ export function CalendarCreateDialog({ date, open, onOpenChange, onCreated }: Ca
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     title: form.title,
-                    eventDate: form.eventDate || dateStr,
+                    eventDate: resolvedDate,
                     eventTime: form.eventTime || null,
                     clientName: form.clientName,
                     clientEmail: form.clientEmail || null,
@@ -169,13 +175,10 @@ export function CalendarCreateDialog({ date, open, onOpenChange, onCreated }: Ca
                             <label htmlFor="eventDate" className={labelClass}>
                                 Data <span className="text-red-500">*</span>
                             </label>
-                            <input
+                            <DateInput
                                 id="eventDate"
-                                name="eventDate"
-                                type="date"
                                 value={form.eventDate || dateStr}
-                                onChange={handleChange}
-                                required
+                                onChange={(iso) => setForm((prev) => ({ ...prev, eventDate: iso ?? "" }))}
                                 className={inputClass}
                             />
                         </div>

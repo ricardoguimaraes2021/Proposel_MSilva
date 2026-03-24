@@ -59,6 +59,7 @@ const normalizeTags = (value?: string) => {
 export function ServiceDialog({ categories, catalogItems }: { categories: CategoryRow[], catalogItems?: any[] }) {
   const [open, setOpen] = useState(false)
   const [selectedCatalogItems, setSelectedCatalogItems] = useState<number[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(false)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategories, setNewCategories] = useState<CategoryRow[]>([])
@@ -284,22 +285,59 @@ export function ServiceDialog({ categories, catalogItems }: { categories: Catego
 
           <div className="grid gap-2">
             <Label>Itens do Catálogo Incluídos</Label>
+            <div className="relative">
+              <Input
+                placeholder="Pesquisar itens..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mb-2"
+              />
+            </div>
             <div className="h-48 overflow-y-auto border rounded-md p-3 space-y-2">
-               {catalogItems?.map(item => (
-                 <div key={item.id} className="flex items-center space-x-2">
-                   <Checkbox
-                     id={`cat_item_${item.id}`}
-                     checked={selectedCatalogItems.includes(item.id)}
-                     onCheckedChange={(checked) => {
-                       if (checked) setSelectedCatalogItems(prev => [...prev, item.id])
-                       else setSelectedCatalogItems(prev => prev.filter(id => id !== item.id))
-                     }}
-                   />
-                   <Label htmlFor={`cat_item_${item.id}`} className="text-sm font-normal cursor-pointer">
-                     {item.name_pt} <span className="text-muted-foreground ml-1">({item.name_en})</span>
-                   </Label>
-                 </div>
-               ))}
+               {catalogItems?.slice().sort((a, b) => {
+                 const aMatch = searchTerm && (
+                   (a.name_pt?.toLowerCase() || "").includes(searchTerm.toLowerCase()) || 
+                   (a.name_en?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+                 );
+                 const bMatch = searchTerm && (
+                   (b.name_pt?.toLowerCase() || "").includes(searchTerm.toLowerCase()) || 
+                   (b.name_en?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+                 );
+                 if (aMatch && !bMatch) return -1;
+                 if (!aMatch && bMatch) return 1;
+                 return (a.sort_order || 0) - (b.sort_order || 0);
+               }).map(item => {
+                 const isMatch = searchTerm && (
+                   (item.name_pt?.toLowerCase() || "").includes(searchTerm.toLowerCase()) || 
+                   (item.name_en?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+                 );
+                 return (
+                   <div 
+                     key={item.id} 
+                     className={`flex items-center space-x-2 p-1 rounded-sm transition-colors ${isMatch ? "bg-yellow-100/50" : ""}`}
+                   >
+                     <Checkbox
+                       id={`cat_item_${item.id}`}
+                       checked={selectedCatalogItems.includes(item.id)}
+                       onCheckedChange={(checked) => {
+                         if (checked) setSelectedCatalogItems(prev => [...prev, item.id])
+                         else setSelectedCatalogItems(prev => prev.filter(id => id !== item.id))
+                       }}
+                     />
+                     <Label 
+                       htmlFor={`cat_item_${item.id}`} 
+                       className={`text-sm font-normal cursor-pointer flex flex-col ${searchTerm && !isMatch ? "opacity-50" : ""}`}
+                     >
+                       <span className={isMatch ? "font-medium" : ""}>{item.name_pt}</span>
+                       {item.name_en && (
+                         <span className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                           {item.name_en}
+                         </span>
+                       )}
+                     </Label>
+                   </div>
+                 );
+               })}
                {!catalogItems?.length && <p className="text-sm text-muted-foreground p-2">Nenhum item no catálogo.</p>}
             </div>
             <p className="text-xs text-muted-foreground">Selecione os itens (do Catálogo) que compõem este menu/serviço.</p>

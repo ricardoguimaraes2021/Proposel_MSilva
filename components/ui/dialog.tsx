@@ -8,7 +8,23 @@ import { cn } from "@/lib/utils"
 
 const Dialog = DialogPrimitive.Root
 
-const DialogTrigger = DialogPrimitive.Trigger
+const DialogTrigger = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger>
+>(({ asChild, children, ...props }, ref) => {
+  const child =
+    React.isValidElement(children) && asChild !== false
+      ? React.cloneElement(children as React.ReactElement<{ suppressHydrationWarning?: boolean }>, {
+          suppressHydrationWarning: true,
+        })
+      : children
+  return (
+    <DialogPrimitive.Trigger asChild={asChild} ref={ref} {...props}>
+      {child}
+    </DialogPrimitive.Trigger>
+  )
+})
+DialogTrigger.displayName = DialogPrimitive.Trigger.displayName
 
 const DialogPortal = DialogPrimitive.Portal
 

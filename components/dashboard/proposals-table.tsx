@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { formatDateShort } from "@/lib/utils"
 
 type ProposalRow = {
@@ -181,6 +182,11 @@ export function ProposalsTable({
                   <TableCell>{createdAt}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2 flex-wrap">
+                      {hasId ? (
+                        <Button size="sm" variant="secondary" asChild>
+                          <Link href={`/dashboard/proposals/${proposalId}/edit`}>Editar</Link>
+                        </Button>
+                      ) : null}
                       {proposal.status !== "accepted" ? (
                         <Button
                           size="sm"

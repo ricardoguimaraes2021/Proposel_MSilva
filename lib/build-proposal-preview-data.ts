@@ -119,13 +119,13 @@ function parseOptionalNotes(notes: string | null): { isOptional: boolean; detail
   if (!notes) return { isOptional: false, detailsText: "" }
   let cleaned = notes
   // Compatibilidade: aceita tanto "Opcao apresentada" (sem acento) como "Opção apresentada".
-  const optionalRegex = /(\s*\|\s*)?Op[cç]ao apresentada\s*$/i
+  const optionalRegex = /(\s*\|\s*)?Op[cç][ãa]o apresentada\s*$/i
   if (optionalRegex.test(cleaned)) {
     cleaned = cleaned.replace(optionalRegex, "").trim()
     return { isOptional: true, detailsText: cleaned }
   }
-  if (/Op[cç]ao apresentada/i.test(cleaned)) {
-    cleaned = cleaned.replace(/Op[cç]ao apresentada/gi, "").trim()
+  if (/Op[cç][ãa]o apresentada/i.test(cleaned)) {
+    cleaned = cleaned.replace(/Op[cç][ãa]o apresentada/gi, "").trim()
     return { isOptional: true, detailsText: cleaned }
   }
   return { isOptional: false, detailsText: cleaned.trim() }
@@ -228,8 +228,7 @@ export function buildProposalPreviewData(
       })
   }
 
-  const includedPreview: ProposalPreviewService[] = []
-  const optionalPreview: ProposalPreviewService[] = []
+  const allPreviewServices: ProposalPreviewService[] = []
 
   sortedServices.forEach((service) => {
     const parsed = parseOptionalNotes(service.notes)
@@ -257,13 +256,10 @@ export function buildProposalPreviewData(
       includedItems: includedText,
       options: buildOptions(optionMap.get(service.id) ?? []),
       priceNote,
+      isOptional: parsed.isOptional,
     }
 
-    if (parsed.isOptional) {
-      optionalPreview.push(entry)
-    } else {
-      includedPreview.push(entry)
-    }
+    allPreviewServices.push(entry)
   })
 
   const eventTypeLabels = lang === "en" ? eventTypeLabelsEn : eventTypeLabelsPt
@@ -331,8 +327,8 @@ export function buildProposalPreviewData(
     eventLocation: proposal.event_location ?? undefined,
     guestCount: proposal.guest_count ? String(proposal.guest_count) : undefined,
     guestBasis,
-    services: includedPreview,
-    optionalServices: optionalPreview,
+    services: allPreviewServices,
+    optionalServices: [],
     subtotal: Number(proposal.subtotal ?? proposal.total ?? 0),
     sections:
       (lang === "en" ? proposal.custom_intro_en : proposal.custom_intro_pt) ||

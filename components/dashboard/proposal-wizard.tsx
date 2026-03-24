@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { DateInput } from "@/components/ui/date-input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -76,6 +77,27 @@ type TermsTemplateOption = {
   content_en: string
 }
 
+export type ProposalInitialData = {
+  clientName?: string
+  clientEmail?: string
+  clientPhone?: string
+  clientCompany?: string
+  clientNif?: string
+  eventTitle?: string
+  eventType?: string
+  eventDate?: string
+  eventLocation?: string
+  guestCount?: string
+  valuesIncludeVat?: boolean
+  pdfLanguage?: "pt" | "en"
+  contextText?: string
+  termsPt?: string
+  termsEn?: string
+  selectedServices?: Record<string, ServiceSelection>
+  serviceOrder?: string[]
+  customServices?: Service[]
+}
+
 type ProposalWizardProps = {
   services: Service[]
   categories: CategoryRow[]
@@ -92,6 +114,8 @@ type ProposalWizardProps = {
     facebook?: string
     address?: string
   }
+  proposalId?: string
+  initialData?: ProposalInitialData
 }
 
 const defaultContext = ""
@@ -127,50 +151,61 @@ export function ProposalWizard({
   companyTagline,
   companyLogoUrl,
   companyContact,
+  proposalId,
+  initialData,
 }: ProposalWizardProps) {
   const router = useRouter()
+  const isEditMode = Boolean(proposalId)
   const firstTemplate = termsTemplates[0]
   const [step, setStep] = useState(0)
   const [selectedClientId, setSelectedClientId] = useState<string>("")
-  const [clientName, setClientName] = useState("")
-  const [clientEmail, setClientEmail] = useState("")
-  const [clientPhone, setClientPhone] = useState("")
-  const [clientCompany, setClientCompany] = useState("")
-  const [clientNif, setClientNif] = useState("")
-  const [eventTitle, setEventTitle] = useState("")
-  const [eventType, setEventType] = useState("Casamento")
-  const [eventDate, setEventDate] = useState("")
-  const [eventLocation, setEventLocation] = useState("")
-  const [guestCount, setGuestCount] = useState("")
-  /** true = valores com IVA (PT) / including VAT (EN); false = valores sem IVA / excluding VAT */
-  const [valuesIncludeVat, setValuesIncludeVat] = useState(false)
+  const [clientName, setClientName] = useState(initialData?.clientName ?? "")
+  const [clientEmail, setClientEmail] = useState(initialData?.clientEmail ?? "")
+  const [clientPhone, setClientPhone] = useState(initialData?.clientPhone ?? "")
+  const [clientCompany, setClientCompany] = useState(initialData?.clientCompany ?? "")
+  const [clientNif, setClientNif] = useState(initialData?.clientNif ?? "")
+  const [eventTitle, setEventTitle] = useState(initialData?.eventTitle ?? "")
+  const [eventType, setEventType] = useState(initialData?.eventType ?? "Casamento")
+  const [eventDate, setEventDate] = useState(initialData?.eventDate ?? "")
+  const [eventLocation, setEventLocation] = useState(initialData?.eventLocation ?? "")
+  const [guestCount, setGuestCount] = useState(initialData?.guestCount ?? "")
+  const [valuesIncludeVat, setValuesIncludeVat] = useState(initialData?.valuesIncludeVat ?? false)
   const [isSaving, setIsSaving] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [nifError, setNifError] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  const [contextText, setContextText] = useState(defaultContext)
+  const [contextText, setContextText] = useState(initialData?.contextText ?? defaultContext)
   const [termsTemplateId, setTermsTemplateId] = useState(firstTemplate?.id ?? "")
-  const [termsPt, setTermsPt] = useState(firstTemplate?.content_pt ?? "")
-  const [termsEn, setTermsEn] = useState(firstTemplate?.content_en ?? "")
-  const [pdfLanguage, setPdfLanguage] = useState<"pt" | "en">("pt")
+  const [termsPt, setTermsPt] = useState(initialData?.termsPt ?? firstTemplate?.content_pt ?? "")
+  const [termsEn, setTermsEn] = useState(initialData?.termsEn ?? firstTemplate?.content_en ?? "")
+  const [pdfLanguage, setPdfLanguage] = useState<"pt" | "en">(initialData?.pdfLanguage ?? "pt")
 
-  const [selectedServices, setSelectedServices] = useState<Record<string, ServiceSelection>>({})
-  const [serviceOrder, setServiceOrder] = useState<string[]>([])
+  const [selectedServices, setSelectedServices] = useState<Record<string, ServiceSelection>>(initialData?.selectedServices ?? {})
+  const [serviceOrder, setServiceOrder] = useState<string[]>(initialData?.serviceOrder ?? [])
+  const [customServices, setCustomServices] = useState<Service[]>(initialData?.customServices ?? [])
+  
+  // Custom Service Form State
+  const [showCustomForm, setShowCustomForm] = useState(false)
+  const [csNamePt, setCsNamePt] = useState("")
+  const [csNameEn, setCsNameEn] = useState("")
+  const [csPricingType, setCsPricingType] = useState<PricingType>("per_person")
+  const [csBasePrice, setCsBasePrice] = useState("")
+  const [csIncludedItems, setCsIncludedItems] = useState("")
 
   const steps = ["Cliente", "Evento", "Serviços", "Conteúdo", "Resumo"]
 
-  const serviceById = useMemo(() => new Map(services.map((service) => [service.id, service])), [services])
+  const serviceById = useMemo(() => {
+    const map = new Map<string, Service>(services.map((service) => [service.id, service]))
+    customServices.forEach(cs => map.set(cs.id, cs))
+    return map
+  }, [services, customServices])
 
-  const sortedCategories = useMemo(() => {
-    const safe = categories.map((category) => ({
-      ...category,
-      sort_order: category.sort_order ?? 0,
-    }))
-    safe.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-    return safe
-  }, [categories])
+  const sortedCatalogCategories = useMemo(() =>
+    [...categories].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)),
+    [categories]
+  )
 
   const servicesByCategory = useMemo(() => {
     const map = new Map<string, Service[]>()
@@ -181,9 +216,13 @@ export function ProposalWizard({
       map.set(categoryId, list)
     })
 
+    if (customServices.length > 0) {
+      map.set("custom", customServices)
+    }
+
     map.forEach((list) => list.sort((a, b) => a.sortOrder - b.sortOrder))
     return map
-  }, [services])
+  }, [services, customServices])
 
   const guestCountNumber = Number(guestCount)
   const lastGuestCountRef = useRef(guestCountNumber)
@@ -257,6 +296,41 @@ export function ProposalWizard({
       },
     }))
     setServiceOrder((prev) => (prev.includes(serviceId) ? prev : [...prev, serviceId]))
+  }
+
+  const addCustomService = () => {
+    const id = `custom-${Date.now()}`
+    const newService: Service = {
+      id,
+      categoryId: "custom",
+      name: { pt: csNamePt, en: csNameEn || csNamePt },
+      pricingType: csPricingType,
+      basePrice: csPricingType === "on_request" ? null : (Number(csBasePrice) || 0),
+      sortOrder: customServices.length + 1,
+      minQuantity: 1,
+      maxQuantity: undefined,
+      unit: { pt: "pessoa", en: "person" },
+      description: { pt: "", en: "" },
+      isActive: true,
+      includedItems: csIncludedItems.split("\n").filter(Boolean).map((text, i) => ({
+        id: `cs-item-${i}`,
+        serviceId: id,
+        sectionKey: "main",
+        text: { pt: text, en: text },
+        sortOrder: i
+      })),
+      pricedOptions: []
+    }
+    setCustomServices(prev => [...prev, newService])
+    toggleService(id, true)
+    
+    // Reset Form
+    setCsNamePt("")
+    setCsNameEn("")
+    setCsPricingType("per_person")
+    setCsBasePrice("")
+    setCsIncludedItems("")
+    setShowCustomForm(false)
   }
 
   const updateServiceField = (serviceId: string, patch: Partial<ServiceSelection>) => {
@@ -431,13 +505,15 @@ export function ProposalWizard({
   const previewData = useMemo<ProposalPreviewData>(() => {
     const titleBase = eventTitle?.trim() ? eventTitle.trim() : eventType
 
-    const includedPreview = includedServices
-      .map(buildPreviewService)
-      .filter(Boolean) as ProposalPreviewService[]
-
-    const optionalPreview = optionalServices
-      .map(buildPreviewService)
-      .filter(Boolean) as ProposalPreviewService[]
+    const allPreviewServices: ProposalPreviewService[] = []
+    serviceOrder.forEach((id) => {
+      const entry = selectedServices[id]
+      if (!entry) return
+      const built = buildPreviewService(entry)
+      if (!built) return
+      built.isOptional = !entry.includeInTotal
+      allPreviewServices.push(built)
+    })
 
     const isEn = pdfLanguage === "en"
     const eventTypeLabelEn: Record<string, string> = {
@@ -482,12 +558,12 @@ export function ProposalWizard({
       subtotal,
       sections: contentSections,
       footerNotes: isEn ? termsEn : termsPt,
-      services: includedPreview,
-      optionalServices: optionalPreview,
+      services: allPreviewServices,
+      optionalServices: [],
     }
   }, [
-    includedServices,
-    optionalServices,
+    serviceOrder,
+    selectedServices,
     companyName,
     companyTagline,
     companyLogoUrl,
@@ -542,7 +618,7 @@ export function ProposalWizard({
             : "Opção apresentada"
 
         return {
-          service_id: service.id,
+          service_id: service.id.startsWith("custom-") ? null : service.id,
           service_name_pt: service.name.pt,
           service_name_en: service.name.en,
           pricing_type: service.pricingType,
@@ -623,8 +699,11 @@ export function ProposalWizard({
         options: optionPayload,
       }
 
-      const response = await fetch("/api/proposals", {
-        method: "POST",
+      const url = isEditMode ? `/api/proposals/${proposalId}` : "/api/proposals"
+      const method = isEditMode ? "PATCH" : "POST"
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -635,15 +714,18 @@ export function ProposalWizard({
       }
 
       const proposal = await response.json()
+      const resolvedId = isEditMode ? proposalId! : proposal.id
 
       const lang = pdfLanguage === "en" ? "en" : "pt"
-      window.open(`/api/proposals/${proposal.id}/pdf?lang=${lang}`, "_blank", "noopener,noreferrer")
+      window.open(`/api/proposals/${resolvedId}/pdf?lang=${lang}`, "_blank", "noopener,noreferrer")
 
-      await fetch(`/api/proposals/${proposal.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "sent", language: pdfLanguage }),
-      })
+      if (!isEditMode) {
+        await fetch(`/api/proposals/${resolvedId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "sent", language: pdfLanguage }),
+        })
+      }
 
       router.push("/dashboard/proposals")
       router.refresh()
@@ -663,7 +745,10 @@ export function ProposalWizard({
     const effectiveUnit = getEffectiveUnitPrice(service.pricingType, service.basePrice, selection?.overridePrice)
     const unitLabel = getQuantityLabel(service.pricingType, service.unit)
 
-    const includedItems = buildIncludedItems(service.includedItems)
+    const catalogItems = buildIncludedItems(service.includedItems)
+    const includedItems = selection?.notes !== undefined && selection.notes.trim().length > 0
+      ? selection.notes.split(/\n+/).map((line) => line.trim()).filter(Boolean)
+      : catalogItems
     const options = buildOptions(service.pricedOptions)
 
     return (
@@ -779,7 +864,7 @@ export function ProposalWizard({
               </div>
               <Textarea
                 id={`notes_${service.id}`}
-                value={selection.notes ?? includedItems.join("\n")}
+                value={selection.notes ?? catalogItems.join("\n")}
                 onChange={(event) => updateServiceField(service.id, { notes: event.target.value })}
                 placeholder="1 item por linha. Se vazio, usa a lista do catalogo."
               />
@@ -998,7 +1083,7 @@ export function ProposalWizard({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="event_date">Data</Label>
-              <Input id="event_date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+              <DateInput id="event_date" value={eventDate} onChange={(iso) => setEventDate(iso ?? "")} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="event_location">Local</Label>
@@ -1051,38 +1136,128 @@ export function ProposalWizard({
             <CardDescription>Selecione os serviços e opções extras.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {sortedCategories.length === 0 ? (
-              <div className="space-y-4">
-                {services.map(renderServiceCard)}
-              </div>
-            ) : (
-              sortedCategories.map((category) => {
-                const list = servicesByCategory.get(category.id) ?? []
-                if (list.length === 0) return null
-                return (
-                  <div key={category.id} className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold">{category.name_pt}</h3>
-                      <Separator className="flex-1" />
-                    </div>
-                    <div className="space-y-4">
-                      {list.map(renderServiceCard)}
-                    </div>
-                  </div>
-                )
-              })
-            )}
-            {servicesByCategory.get("uncategorized")?.length ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold">Outros</h3>
-                  <Separator className="flex-1" />
-                </div>
+            {services.length > 0 ? (
+              sortedCatalogCategories.length === 0 ? (
                 <div className="space-y-4">
-                  {servicesByCategory.get("uncategorized")?.map(renderServiceCard)}
+                  {services.map(renderServiceCard)}
                 </div>
-              </div>
+              ) : (
+                <>
+                  {sortedCatalogCategories.map((category) => {
+                    const list = servicesByCategory.get(category.id) ?? []
+                    if (list.length === 0) return null
+                    return (
+                      <div key={category.id} className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold">{category.name_pt}</h3>
+                          <Separator className="flex-1" />
+                        </div>
+                        <div className="space-y-4">
+                          {list.map(renderServiceCard)}
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {servicesByCategory.get("uncategorized")?.length ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold">Outros</h3>
+                        <Separator className="flex-1" />
+                      </div>
+                      <div className="space-y-4">
+                        {servicesByCategory.get("uncategorized")?.map(renderServiceCard)}
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              )
             ) : null}
+
+            <div className="space-y-4 pt-6">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-primary">Serviços Personalizados</h3>
+                <Separator className="flex-1" />
+                {!showCustomForm && (
+                  <Button variant="outline" size="sm" onClick={() => setShowCustomForm(true)}>
+                    + Novo serviço / categoria ad-hoc
+                  </Button>
+                )}
+              </div>
+              
+              {showCustomForm && (
+                <Card className="border-dashed border-primary/50 bg-primary/5">
+                  <CardHeader className="py-4">
+                    <CardTitle className="text-sm">Novo Serviço Personalizado</CardTitle>
+                    <CardDescription className="text-xs">Este serviço existirá apenas nesta proposta.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pb-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="cs_name_pt" className="text-xs">Nome (PT)</Label>
+                        <Input id="cs_name_pt" value={csNamePt} onChange={(e) => setCsNamePt(e.target.value)} placeholder="Ex: Mesa de Sobremesas Regionais" />
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="cs_name_en" className="text-xs">Nome (EN)</Label>
+                        <Input id="cs_name_en" value={csNameEn} onChange={(e) => setCsNameEn(e.target.value)} placeholder="Ex: Regional Dessert Table" />
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="cs_type" className="text-xs">Tipo de Preço</Label>
+                        <select
+                          id="cs_type"
+                          value={csPricingType}
+                          onChange={(e) => setCsPricingType(e.target.value as PricingType)}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="per_person">Por pessoa</option>
+                          <option value="fixed">Fixo</option>
+                          <option value="on_request">Sob consulta</option>
+                        </select>
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="cs_price" className="text-xs">Preço Base (EUR)</Label>
+                        <Input
+                          id="cs_price"
+                          type="number"
+                          value={csBasePrice}
+                          onChange={(e) => setCsBasePrice(e.target.value)}
+                          disabled={csPricingType === "on_request"}
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="cs_items" className="text-xs">Itens Incluídos (1 por linha)</Label>
+                      <Textarea
+                        id="cs_items"
+                        value={csIncludedItems}
+                        onChange={(e) => setCsIncludedItems(e.target.value)}
+                        placeholder="Arroz Doce&#10;Leite Creme&#10;Tarte de Amêndoa"
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button variant="ghost" size="sm" onClick={() => setShowCustomForm(false)}>Cancelar</Button>
+                      <Button size="sm" onClick={addCustomService} disabled={!csNamePt.trim()}>Adicionar à Proposta</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {servicesByCategory.get("custom")?.length ? (
+                <div className="space-y-4">
+                  {servicesByCategory.get("custom")?.map(renderServiceCard)}
+                </div>
+              ) : !showCustomForm && (
+                <p className="text-sm text-muted-foreground text-center py-4 italic border rounded-md border-dashed">
+                  Caso o catálogo não contenha o que precisa, crie um serviço personalizado acima.
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
       ) : null}
@@ -1212,7 +1387,7 @@ export function ProposalWizard({
                 Subtotal: <span className="font-semibold text-foreground">{formatCurrency(subtotal)}</span>
               </div>
               <Button onClick={handleDownloadPdf} disabled={isGenerating || isSaving}>
-                {isGenerating || isSaving ? "A gerar..." : "Aprovar e gerar PDF"}
+                {isGenerating || isSaving ? "A gerar..." : isEditMode ? "Guardar e gerar PDF" : "Aprovar e gerar PDF"}
               </Button>
             </div>
           </CardContent>

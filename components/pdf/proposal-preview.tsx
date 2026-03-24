@@ -19,6 +19,7 @@ export type ProposalPreviewService = {
   includedItems?: string[]
   options?: ProposalPreviewOption[]
   priceNote?: string
+  isOptional?: boolean
 }
 
 export type ProposalPreviewSection = {
@@ -106,12 +107,15 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
     const includedItems = service.includedItems?.length
       ? service.includedItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
       : ""
+    const optionalBadge = service.isOptional
+      ? ` <span style="font-size:10px;color:var(--brand-soft);font-weight:500;">(Opção apresentada)</span>`
+      : ""
 
     return `
       <div class="service-block">
         <div class="service-header">
           <div>
-            <div class="service-name">${escapeHtml(service.name)}</div>
+            <div class="service-name">${escapeHtml(service.name)}${optionalBadge}</div>
             ${quantityLabel ? `<div class="service-qty">${escapeHtml(quantityLabel)}</div>` : ""}
           </div>
           <div class="service-price">${escapeHtml(priceLabel)}</div>
@@ -125,18 +129,10 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
     `
   }
 
-  const servicesBlock = data.services?.length
-    ? data.services.map(renderServiceBlock).join("")
+  const allServices = [...(data.services ?? []), ...(data.optionalServices ?? [])]
+  const servicesBlock = allServices.length
+    ? allServices.map(renderServiceBlock).join("")
     : `<p class="muted">Nenhum serviço selecionado.</p>`
-
-  const optionalBlock = data.optionalServices?.length
-    ? `
-    <section class="section">
-      <h2>Opções Apresentadas</h2>
-      ${data.optionalServices.map(renderServiceBlock).join("")}
-    </section>
-  `
-    : ""
 
   const sectionBlocks = data.sections
     .map((section) => {
@@ -410,11 +406,9 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
   ${sectionBlocks}
 
   <section class="section">
-    <h2>Serviços Selecionados</h2>
+    <h2>Serviços</h2>
     ${servicesBlock}
   </section>
-
-  ${optionalBlock}
 
   <div class="totals">
     <div>
@@ -451,6 +445,8 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
     data.companyContact?.address ? { label: "Morada", value: data.companyContact.address } : null,
   ].filter(Boolean) as { label: string; value: string }[]
 
+  const allPreviewServices = [...(data.services ?? []), ...(data.optionalServices ?? [])]
+
   const renderService = (service: ProposalPreviewService, index: number) => {
     const priceLabel = getPriceLabel(service.pricingType, service.unitPrice, service.priceNote)
     const quantityLabel = getQuantityLabel(service.pricingType, service.quantity)
@@ -459,7 +455,12 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
       <div key={`${service.name}-${index}`} className="rounded-md border p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold">{service.name}</p>
+            <p className="text-sm font-semibold">
+              {service.name}
+              {service.isOptional ? (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">(Opção apresentada)</span>
+              ) : null}
+            </p>
             {quantityLabel ? <p className="text-xs text-muted-foreground">{quantityLabel}</p> : null}
           </div>
           <p className="text-sm font-semibold text-muted-foreground">{priceLabel}</p>
@@ -567,24 +568,15 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
         ) : null}
 
         <section>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Serviços Selecionados</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Serviços</h4>
           <div className="mt-3 grid gap-4">
-            {data.services?.length ? (
-              data.services.map(renderService)
+            {allPreviewServices.length ? (
+              allPreviewServices.map(renderService)
             ) : (
               <p className="text-sm text-muted-foreground">Nenhum serviço selecionado.</p>
             )}
           </div>
         </section>
-
-        {data.optionalServices?.length ? (
-          <section>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Opções Apresentadas</h4>
-            <div className="mt-3 grid gap-4">
-              {data.optionalServices.map(renderService)}
-            </div>
-          </section>
-        ) : null}
 
         {data.footerNotes ? (
           <section>

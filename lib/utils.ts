@@ -25,6 +25,40 @@ export function formatDateShort(value: string | Date | null | undefined, fallbac
   return date.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" })
 }
 
+/** Converte YYYY-MM-DD para dd/mm/yyyy para exibição. */
+export function isoToDisplayDate(iso: string | null | undefined): string {
+  if (!iso || typeof iso !== "string") return ""
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (m) {
+    const year = Number(m[1])
+    const month = Number(m[2])
+    const day = Number(m[3])
+    const date = new Date(year, month - 1, day)
+    if (Number.isNaN(date.getTime())) return ""
+    return date.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" })
+  }
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ""
+  return date.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" })
+}
+
+/** Parse dd/mm/yyyy ou dd-mm-yyyy, retorna YYYY-MM-DD ou null se inválido. */
+export function displayDateToIso(input: string): string | null {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+  const parts = trimmed.split(/[/-]/).map((p) => p.trim())
+  if (parts.length !== 3) return null
+  const day = parseInt(parts[0], 10)
+  const month = parseInt(parts[1], 10)
+  const year = parseInt(parts[2], 10)
+  if (Number.isNaN(day) || Number.isNaN(month) || Number.isNaN(year)) return null
+  if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) return null
+  const date = new Date(year, month - 1, day)
+  if (Number.isNaN(date.getTime())) return null
+  if (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) return null
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+}
+
 export function sanitizePhoneInput(value: string, maxDigits = 15) {
   const trimmed = value.trim()
   const normalized = trimmed.startsWith("00") ? `+${trimmed.slice(2)}` : trimmed
