@@ -239,12 +239,16 @@ export function buildProposalPreviewData(
           .filter(Boolean)
       : includedMap.get(service.service_id ?? "") ?? []
 
-    const priceNote = buildPriceNote(
+    let priceNote = buildPriceNote(
       service.pricing_type,
       service.unit_price,
       service.custom_price,
       lang
     )
+    // Linha opcional (fora do total) com 0 € não é "incluída no pacote" — preço variável / sob consulta
+    if (!priceNote && parsed.isOptional && service.unit_price === 0) {
+      priceNote = lang === "en" ? "On request" : "Sob consulta"
+    }
 
     const serviceName = lang === "en" ? (service.service_name_en || service.service_name_pt) : (service.service_name_pt || service.service_name_en)
     const entry: ProposalPreviewService = {

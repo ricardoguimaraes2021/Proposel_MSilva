@@ -5,7 +5,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { CalendarEventDialog } from "./calendar-event-dialog"
 import { CalendarCreateDialog } from "./calendar-create-dialog"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { CalendarDays, Plus, ChevronLeft, ChevronRight, MapPin, Users, FileText } from "lucide-react"
+import { CalendarDays, Plus, ChevronLeft, ChevronRight, Users } from "lucide-react"
 import { formatDateShort } from "@/lib/utils"
 
 export interface CalendarEventData {
@@ -131,16 +131,6 @@ export function CalendarView() {
         setCurrentMonth(new Date())
     }
 
-    // Formatar label do tipo de evento
-    const eventTypeLabel = (type: string | null | undefined) => {
-        switch (type) {
-            case "wedding": return "Casamento"
-            case "corporate": return "Corporativo"
-            case "private": return "Privado"
-            default: return "Evento"
-        }
-    }
-
     // Todos os eventos no mês actual, ordenados por data
     const monthEvents = [...events].sort((a, b) => a.eventDate.localeCompare(b.eventDate))
 
@@ -149,7 +139,7 @@ export function CalendarView() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
                         <CalendarDays className="h-6 w-6" />
                         Calendário
                     </h1>
@@ -168,9 +158,9 @@ export function CalendarView() {
 
             <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
                 {/* Calendário principal */}
-                <div className="rounded-xl border bg-white shadow-sm">
+                <div className="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
                     {/* Nav do mês */}
-                    <div className="flex items-center justify-between border-b px-6 py-4">
+                    <div className="flex items-center justify-between border-b border-border px-6 py-4">
                         <button
                             onClick={prevMonth}
                             className="rounded-md p-2 hover:bg-accent transition-colors"
@@ -178,7 +168,7 @@ export function CalendarView() {
                             <ChevronLeft className="h-5 w-5" />
                         </button>
                         <div className="flex items-center gap-3">
-                            <h2 className="text-lg font-semibold capitalize">
+                            <h2 className="text-lg font-semibold capitalize text-foreground">
                                 {formatDate(currentMonth)}
                             </h2>
                             <button
@@ -222,7 +212,7 @@ export function CalendarView() {
                                 weekdays: "flex w-full",
                                 day: "flex-1 relative p-0 text-center",
                                 day_button:
-                                    "w-full h-[var(--cell-size)] rounded-lg text-sm font-medium hover:bg-accent/50 transition-colors relative",
+                                    "w-full h-[var(--cell-size)] rounded-lg text-sm font-medium text-foreground hover:bg-accent/50 transition-colors relative",
                                 today: "bg-accent text-accent-foreground font-bold",
                                 selected: "bg-primary text-primary-foreground",
                                 outside: "text-muted-foreground/40",
@@ -233,7 +223,7 @@ export function CalendarView() {
                     </div>
 
                     {/* Legenda */}
-                    <div className="border-t px-6 py-3 flex items-center gap-6 text-xs text-muted-foreground">
+                    <div className="border-t border-border px-6 py-3 flex items-center gap-6 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1.5">
                             <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                             Orçamento aceite
@@ -247,9 +237,9 @@ export function CalendarView() {
 
                 {/* Sidebar — próximos eventos do mês */}
                 <div className="space-y-4">
-                    <div className="rounded-xl border bg-white shadow-sm">
-                        <div className="border-b px-5 py-4">
-                            <h3 className="font-semibold text-sm">
+                    <div className="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                        <div className="border-b border-border px-5 py-4">
+                            <h3 className="font-semibold text-sm text-foreground">
                                 Eventos este mês
                                 {!loading && (
                                     <span className="ml-2 text-xs font-normal text-muted-foreground">
@@ -266,7 +256,7 @@ export function CalendarView() {
                                     Sem eventos neste mês.
                                 </div>
                             ) : (
-                                <div className="divide-y">
+                                <div className="divide-y divide-border">
                                     {monthEvents.map((event) => (
                                         <button
                                             key={event.id}
@@ -282,7 +272,7 @@ export function CalendarView() {
                                                         }`}
                                                 />
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="font-medium text-sm truncate">{event.title}</p>
+                                                    <p className="font-medium text-sm truncate text-foreground">{event.title}</p>
                                                     <p className="text-xs text-muted-foreground mt-0.5">
                                                         {formatDateShort(event.eventDate)}
                                                         {event.eventTime && ` · ${event.eventTime.slice(0, 5)}`}
@@ -300,7 +290,7 @@ export function CalendarView() {
                                                     </div>
                                                 </div>
                                                 {event.source === "proposal" && (
-                                                    <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                                                    <span className="shrink-0 rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-300">
                                                         Proposta
                                                     </span>
                                                 )}
@@ -348,13 +338,13 @@ export function CalendarView() {
                             >
                                 <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${event.source === "proposal" ? "bg-blue-500" : "bg-emerald-500"}`} />
                                 <div className="min-w-0 flex-1">
-                                    <p className="font-medium text-sm truncate">{event.title}</p>
+                                    <p className="font-medium text-sm truncate text-foreground">{event.title}</p>
                                     <p className="text-xs text-muted-foreground mt-0.5">
                                         {event.eventTime ? event.eventTime.slice(0, 5) : "Sem hora"}
                                     </p>
                                 </div>
                                 {event.source === "proposal" && (
-                                    <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                                    <span className="shrink-0 rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-300">
                                         Proposta
                                     </span>
                                 )}

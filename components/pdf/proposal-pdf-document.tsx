@@ -47,6 +47,8 @@ const labelsPt = {
   subtotal: "Subtotal",
   generalTerms: "Condições Gerais",
   perPerson: "pessoa",
+  /** Preço unitário 0 € (fixo ou por pessoa), excepto on_request */
+  includedZeroPrice: "Incluído",
   eventFallback: "Evento",
 }
 
@@ -73,6 +75,7 @@ const labelsEn = {
   subtotal: "Subtotal",
   generalTerms: "General Terms",
   perPerson: "person",
+  includedZeroPrice: "Included",
   eventFallback: "Event",
 }
 
@@ -81,11 +84,24 @@ function getPriceLabel(
   unitPrice: number,
   priceNote: string | undefined,
   locale: "pt-PT" | "en-GB",
-  labels: typeof labelsPt
+  labels: typeof labelsPt,
+  isOptionalLine?: boolean
 ): string {
   if (priceNote) return priceNote
-  if (pricingType === "per_person") return `${formatCurrency(unitPrice, locale)} / ${labels.perPerson}`
-  if (pricingType === "on_request") return unitPrice ? formatCurrency(unitPrice, locale) : (locale === "en-GB" ? "On request" : "Sob consulta")
+  if (pricingType === "on_request") {
+    return unitPrice
+      ? formatCurrency(unitPrice, locale)
+      : locale === "en-GB"
+        ? "On request"
+        : "Sob consulta"
+  }
+  if (isOptionalLine && unitPrice === 0) {
+    return locale === "en-GB" ? "On request" : "Sob consulta"
+  }
+  if (unitPrice === 0) return labels.includedZeroPrice
+  if (pricingType === "per_person") {
+    return `${formatCurrency(unitPrice, locale)} / ${labels.perPerson}`
+  }
   return formatCurrency(unitPrice, locale)
 }
 
@@ -305,7 +321,8 @@ function ServiceBlock({
     service.unitPrice,
     service.priceNote,
     locale,
-    labels
+    labels,
+    service.isOptional
   )
   const quantityLabel = getQuantityLabel(service.pricingType, service.quantity, locale)
 
@@ -335,7 +352,8 @@ function ServiceBlock({
               opt.unitPrice,
               opt.priceNote,
               locale,
-              labels
+              labels,
+              undefined
             )
             return (
               <Text key={i} style={styles.listItem}>

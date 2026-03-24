@@ -144,37 +144,37 @@ async function DashboardContent() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-2 text-foreground">Dashboard</h1>
       <p className="text-muted-foreground mb-6">Bem-vindo, {user.email}</p>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-lg border bg-white p-4">
+        <div className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Serviços sem staff</p>
-          <p className="mt-2 text-2xl font-semibold">{servicesWithoutStaff.length}</p>
+          <p className="mt-2 text-2xl font-semibold text-foreground">{servicesWithoutStaff.length}</p>
           <div className="mt-3">
             <Button asChild size="sm" variant="outline">
               <Link href="/dashboard/staff">Gerir Staff</Link>
             </Button>
           </div>
         </div>
-        <div className="rounded-lg border bg-white p-4">
+        <div className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Próximos serviços</p>
-          <p className="mt-2 text-2xl font-semibold">{combinedEvents.length}</p>
+          <p className="mt-2 text-2xl font-semibold text-foreground">{combinedEvents.length}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Propostas + serviços manuais futuros
           </p>
         </div>
-        <div className="rounded-lg border bg-white p-4">
+        <div className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Propostas aceites (futuras)</p>
-          <p className="mt-2 text-2xl font-semibold">{acceptedProposalsUpcoming}</p>
+          <p className="mt-2 text-2xl font-semibold text-foreground">{acceptedProposalsUpcoming}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Total aceites: {acceptedProposals.length}
           </p>
         </div>
       </div>
 
-      <div className="mt-8 rounded-lg border bg-white p-6">
-        <h2 className="text-lg font-semibold">Próximos serviços</h2>
+      <div className="mt-8 rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm">
+        <h2 className="text-lg font-semibold text-foreground">Próximos serviços</h2>
         <p className="text-sm text-muted-foreground">Propostas aceites e serviços manuais com data futura.</p>
 
         <div className="mt-4 grid gap-3">
@@ -182,9 +182,12 @@ async function DashboardContent() {
             <div className="text-sm text-muted-foreground">Sem serviços futuros.</div>
           ) : (
             combinedEvents.map((event) => (
-              <div key={event.key} className="flex flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3">
+              <div
+                key={event.key}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-background/50 px-4 py-3"
+              >
                 <div>
-                  <p className="font-medium">{event.title}</p>
+                  <p className="font-medium text-foreground">{event.title}</p>
                   <p className="text-xs text-muted-foreground">
                     {event.location || "Local a definir"}
                   </p>
@@ -193,14 +196,18 @@ async function DashboardContent() {
                   ) : null}
                 </div>
                 <div className="text-right text-sm">
-                  <p className="font-semibold">{formatDateShort(event.date, "-")}</p>
+                  <p className="font-semibold text-foreground">{formatDateShort(event.date, "-")}</p>
                   <p className="text-xs text-muted-foreground">
                     {event.guestCount ? `${event.guestCount} pessoas` : "Convidados a definir"}
                   </p>
                   {!assignedKeys.has(event.key) ? (
-                    <p className="mt-1 text-xs font-medium text-amber-700">Sem staff atribuído</p>
+                    <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-400">
+                      Sem staff atribuído
+                    </p>
                   ) : (
-                    <p className="mt-1 text-xs font-medium text-emerald-700">Staff atribuído ✓</p>
+                    <p className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                      Staff atribuído ✓
+                    </p>
                   )}
                 </div>
               </div>

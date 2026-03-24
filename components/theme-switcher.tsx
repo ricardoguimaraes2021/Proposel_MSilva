@@ -14,9 +14,8 @@ import { useEffect, useState } from "react";
 
 const ThemeSwitcher = () => {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
-  // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -27,47 +26,70 @@ const ThemeSwitcher = () => {
 
   const ICON_SIZE = 16;
 
+  const TriggerIcon =
+    theme === "system" ? (
+      <Laptop
+        key="system"
+        size={ICON_SIZE}
+        className="text-muted-foreground"
+        aria-hidden
+      />
+    ) : theme === "dark" ? (
+      <Moon
+        key="dark"
+        size={ICON_SIZE}
+        className="text-muted-foreground"
+        aria-hidden
+      />
+    ) : (
+      <Sun
+        key="light"
+        size={ICON_SIZE}
+        className="text-muted-foreground"
+        aria-hidden
+      />
+    );
+
+  const modeDescription =
+    theme === "system"
+      ? `Tema do sistema (${resolvedTheme === "dark" ? "escuro" : "claro"})`
+      : theme === "dark"
+        ? "Tema escuro"
+        : "Tema claro";
+
+  const shortLabel =
+    theme === "system" ? "Sistema" : theme === "dark" ? "Escuro" : "Claro";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size={"sm"}>
-          {theme === "light" ? (
-            <Sun
-              key="light"
-              size={ICON_SIZE}
-              className={"text-muted-foreground"}
-            />
-          ) : theme === "dark" ? (
-            <Moon
-              key="dark"
-              size={ICON_SIZE}
-              className={"text-muted-foreground"}
-            />
-          ) : (
-            <Laptop
-              key="system"
-              size={ICON_SIZE}
-              className={"text-muted-foreground"}
-            />
-          )}
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          className="gap-2"
+          aria-label={`Alternar tema. Atual: ${modeDescription}.`}
+          aria-haspopup="menu"
+        >
+          {TriggerIcon}
+          <span className="hidden sm:inline text-xs text-muted-foreground">
+            {shortLabel}
+          </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-content" align="start">
-        <DropdownMenuRadioGroup
-          value={theme}
-          onValueChange={(e) => setTheme(e)}
-        >
-          <DropdownMenuRadioItem className="flex gap-2" value="light">
-            <Sun size={ICON_SIZE} className="text-muted-foreground" />{" "}
-            <span>Light</span>
+      <DropdownMenuContent className="min-w-[10rem]" align="end">
+        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          <DropdownMenuRadioItem className="gap-2" value="light">
+            <Sun size={ICON_SIZE} className="text-muted-foreground" aria-hidden />
+            <span>Claro</span>
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem className="flex gap-2" value="dark">
-            <Moon size={ICON_SIZE} className="text-muted-foreground" />{" "}
-            <span>Dark</span>
+          <DropdownMenuRadioItem className="gap-2" value="dark">
+            <Moon size={ICON_SIZE} className="text-muted-foreground" aria-hidden />
+            <span>Escuro</span>
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem className="flex gap-2" value="system">
-            <Laptop size={ICON_SIZE} className="text-muted-foreground" />{" "}
-            <span>System</span>
+          <DropdownMenuRadioItem className="gap-2" value="system">
+            <Laptop size={ICON_SIZE} className="text-muted-foreground" aria-hidden />
+            <span>Sistema</span>
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

@@ -71,10 +71,20 @@ const escapeHtml = (value: string) =>
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;")
 
-const getPriceLabel = (pricingType: PricingType, unitPrice: number, priceNote?: string) => {
+const getPriceLabel = (
+  pricingType: PricingType,
+  unitPrice: number,
+  priceNote?: string,
+  /** Linha opcional (fora do total): 0 € = sob consulta, não "incluído" */
+  isOptionalLine?: boolean
+) => {
   if (priceNote) return priceNote
+  if (pricingType === "on_request") {
+    return unitPrice ? formatCurrency(unitPrice) : "Sob consulta"
+  }
+  if (isOptionalLine && unitPrice === 0) return "Sob consulta"
+  if (unitPrice === 0) return "Incluído"
   if (pricingType === "per_person") return `${formatCurrency(unitPrice)} / pessoa`
-  if (pricingType === "on_request") return unitPrice ? formatCurrency(unitPrice) : "Sob consulta"
   return formatCurrency(unitPrice)
 }
 
@@ -102,7 +112,12 @@ export function buildProposalPrintHtml(data: ProposalPreviewData) {
   }
 
   const renderServiceBlock = (service: ProposalPreviewService) => {
-    const priceLabel = getPriceLabel(service.pricingType, service.unitPrice, service.priceNote)
+    const priceLabel = getPriceLabel(
+      service.pricingType,
+      service.unitPrice,
+      service.priceNote,
+      service.isOptional
+    )
     const quantityLabel = getQuantityLabel(service.pricingType, service.quantity)
     const includedItems = service.includedItems?.length
       ? service.includedItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
@@ -448,7 +463,12 @@ export function ProposalPreview({ data }: { data: ProposalPreviewData }) {
   const allPreviewServices = [...(data.services ?? []), ...(data.optionalServices ?? [])]
 
   const renderService = (service: ProposalPreviewService, index: number) => {
-    const priceLabel = getPriceLabel(service.pricingType, service.unitPrice, service.priceNote)
+    const priceLabel = getPriceLabel(
+      service.pricingType,
+      service.unitPrice,
+      service.priceNote,
+      service.isOptional
+    )
     const quantityLabel = getQuantityLabel(service.pricingType, service.quantity)
 
     return (

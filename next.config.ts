@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  async redirects() {
+    return [
+      // Pedidos legacy a /favicon.ico passam a servir o PNG da marca
+      { source: "/favicon.ico", destination: "/favicon.png", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;

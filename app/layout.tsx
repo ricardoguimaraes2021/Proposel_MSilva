@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { AuthSessionHandler } from "@/components/auth-session-handler";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,8 +10,17 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: {
+    default: "MSilva Proposals",
+    template: "%s | MSilva Proposals",
+  },
+  description:
+    "Propostas e orçamentos para catering e eventos — gestão de clientes, serviços e calendário.",
+  icons: {
+    icon: [{ url: "/favicon.png", sizes: "48x48", type: "image/png" }],
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 const inter = Inter({
@@ -32,14 +42,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt" suppressHydrationWarning>
       <body className={`${inter.variable} ${cormorant.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
+          storageKey="msilva-proposals-theme"
           disableTransitionOnChange
         >
+          <AuthSessionHandler />
           {children}
         </ThemeProvider>
       </body>

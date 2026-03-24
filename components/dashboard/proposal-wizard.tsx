@@ -458,9 +458,13 @@ export function ProposalWizard({
     if (!service) return null
 
     const unitPrice = getEffectiveUnitPrice(service.pricingType, service.basePrice, entry.overridePrice)
-    const priceNote = service.pricingType === "on_request" && entry.overridePrice === undefined
-      ? "Sob consulta"
-      : undefined
+    let priceNote =
+      service.pricingType === "on_request" && entry.overridePrice === undefined
+        ? "Sob consulta"
+        : undefined
+    if (!priceNote && !entry.includeInTotal && (unitPrice ?? 0) === 0) {
+      priceNote = "Sob consulta"
+    }
 
     const detailsText = entry.notes && entry.notes.trim().length
       ? entry.notes.trim()
@@ -776,7 +780,11 @@ export function ProposalWizard({
               <span className="font-medium text-muted-foreground">Sob consulta</span>
             ) : (
               <span className="font-semibold">
-                {formatCurrency(effectiveUnit ?? 0)}{service.pricingType === "per_person" ? " / pessoa" : ""}
+                {(effectiveUnit ?? 0) === 0
+                  ? selection && !selection.includeInTotal
+                    ? "Sob consulta"
+                    : "Incluído"
+                  : `${formatCurrency(effectiveUnit ?? 0)}${service.pricingType === "per_person" ? " / pessoa" : ""}`}
               </span>
             )}
           </div>
@@ -908,7 +916,9 @@ export function ProposalWizard({
                           <div className="text-sm text-muted-foreground">
                             {option.pricingType === "on_request" && optionSelection?.overridePrice === undefined
                               ? "Sob consulta"
-                              : `${formatCurrency(optionUnit ?? 0)}${option.pricingType === "per_person" ? " / pessoa" : ""}`}
+                              : (optionUnit ?? 0) === 0
+                                ? "Incluído"
+                                : `${formatCurrency(optionUnit ?? 0)}${option.pricingType === "per_person" ? " / pessoa" : ""}`}
                           </div>
                         </div>
 
