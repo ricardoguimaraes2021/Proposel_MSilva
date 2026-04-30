@@ -106,6 +106,19 @@ export function ProposalsTable({
       .catch(() => {})
   }
 
+  const handleOpenContract = (proposalId: string | null, lang: "pt" | "en", download?: boolean) => {
+    const normalizedId = normalizeProposalId(proposalId)
+    if (!normalizedId) {
+      setErrorId("invalid-id")
+      return
+    }
+    setErrorId(null)
+    const params = new URLSearchParams({ lang })
+    if (download) params.set("download", "1")
+    const url = `/api/proposals/${normalizedId}/contract?${params.toString()}`
+    window.open(url, "_blank", "noopener,noreferrer")
+  }
+
   const handleMarkAccepted = async (proposalId?: string | null) => {
     const normalizedId = normalizeProposalId(proposalId)
     if (!normalizedId) {
@@ -213,6 +226,42 @@ export function ProposalsTable({
                       >
                         PDF (EN)
                       </Button>
+                      {proposal.status === "accepted" ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleOpenContract(proposalId, "pt")}
+                            disabled={!hasId}
+                          >
+                            Contrato (PT)
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleOpenContract(proposalId, "en")}
+                            disabled={!hasId}
+                          >
+                            Contrato (EN)
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenContract(proposalId, "pt", true)}
+                            disabled={!hasId}
+                          >
+                            Descarregar (PT)
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenContract(proposalId, "en", true)}
+                            disabled={!hasId}
+                          >
+                            Descarregar (EN)
+                          </Button>
+                        </>
+                      ) : null}
                     </div>
                     {rowError ? (
                       <div className="mt-2 text-xs text-destructive">Erro ao gerar PDF.</div>

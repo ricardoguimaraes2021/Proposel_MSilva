@@ -210,6 +210,7 @@ export function ProposalEditForm({
   return (
     <ProposalWizard
       proposalId={proposalId}
+      proposalStatus={typeof proposal.status === "string" ? proposal.status : undefined}
       initialData={initialData}
       services={services}
       categories={categories}

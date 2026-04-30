@@ -115,6 +115,8 @@ type ProposalWizardProps = {
     address?: string
   }
   proposalId?: string
+  /** Estado persistido na base de dados (ex.: `accepted`). */
+  proposalStatus?: string
   initialData?: ProposalInitialData
 }
 
@@ -152,6 +154,7 @@ export function ProposalWizard({
   companyLogoUrl,
   companyContact,
   proposalId,
+  proposalStatus,
   initialData,
 }: ProposalWizardProps) {
   const router = useRouter()
@@ -1390,6 +1393,56 @@ export function ProposalWizard({
               </div>
             </div>
             <ProposalPreview data={previewData} />
+            {proposalId && proposalStatus === "accepted" ? (
+              <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
+                <p className="text-sm font-medium">Contrato de prestação de serviços</p>
+                <p className="text-xs text-muted-foreground">
+                  Proposta marcada como aceite: pode abrir o PDF no navegador ou descarregar com nome de ficheiro sugerido.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      window.open(`/api/proposals/${proposalId}/contract?lang=pt`, "_blank", "noopener,noreferrer")
+                    }}
+                  >
+                    Contrato (PT)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      window.open(`/api/proposals/${proposalId}/contract?lang=en`, "_blank", "noopener,noreferrer")
+                    }}
+                  >
+                    Contrato (EN)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      window.open(`/api/proposals/${proposalId}/contract?lang=pt&download=1`, "_blank", "noopener,noreferrer")
+                    }}
+                  >
+                    Descarregar (PT)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      window.open(`/api/proposals/${proposalId}/contract?lang=en&download=1`, "_blank", "noopener,noreferrer")
+                    }}
+                  >
+                    Descarregar (EN)
+                  </Button>
+                </div>
+              </div>
+            ) : null}
             {saveError ? <div className="text-sm text-destructive">{saveError}</div> : null}
             {downloadError ? <div className="text-sm text-destructive">{downloadError}</div> : null}
             <div className="flex flex-wrap items-center justify-between gap-3">
